@@ -2,3 +2,4 @@
 6502-softcore/db
 6502-softcore/incremental_db
 6502-softcore/output_files
+6502-softcore/alu.v.bak
