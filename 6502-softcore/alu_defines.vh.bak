@@ -1,0 +1,20 @@
+// alu_defines.vh
+
+// Definições de Operações da ALU
+`define ALU_OP_ADD 5'd0
+`define ALU_OP_SUB 5'd1
+`define ALU_OP_AND 5'd2
+`define ALU_OP_OR  5'd3
+`define ALU_OP_XOR 5'd4
+`define ALU_OP_INC 5'd5
+`define ALU_OP_DEC 5'd6
+`define ALU_OP_ASL 5'd7
+`define ALU_OP_LSR 5'd8
+`define ALU_OP_ROL 5'd9
+`define ALU_OP_ROR 5'd10
+
+// Opcional: Adicionar um 'ifdef de proteção pode ser útil em projetos maiores.
+// `ifndef ALU_DEFINES_VH
+// `define ALU_DEFINES_VH
+// ... (Suas definições aqui)
+// `endif

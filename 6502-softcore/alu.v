@@ -1,4 +1,6 @@
+`include "alu_defines.vh" 
 module alu(
+
     input wire [4:0] alu_op,
     
     input wire [7:0] reg1,
@@ -12,18 +14,6 @@ module alu(
 
     reg carry_out;
     reg flag_v;
-    
-    localparam ALU_OP_ADD = 5'd0;
-    localparam ALU_OP_SUB = 5'd1;
-    localparam ALU_OP_AND = 5'd2;
-    localparam ALU_OP_OR  = 5'd3;
-    localparam ALU_OP_XOR = 5'd4;
-    localparam ALU_OP_INC = 5'd5;
-    localparam ALU_OP_DEC = 5'd6;
-    localparam ALU_OP_ASL = 5'd7;  
-    localparam ALU_OP_LSR = 5'd8;  
-    localparam ALU_OP_ROL = 5'd9;  
-    localparam ALU_OP_ROR = 5'd10; 
 
 
     always @(*) begin
@@ -72,6 +62,11 @@ module alu(
                 result = (reg1 >> 1);
                 result[7] = carry_in;
             end
+				ALU_OP_PASS: begin
+					 result = reg2;
+				end
+				default: begin
+				end
         endcase
     end
 
