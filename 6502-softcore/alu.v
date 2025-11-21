@@ -24,45 +24,45 @@ module alu(
         
         case (alu_op)
         
-            ALU_OP_ADD: begin
+            `ALU_OP_ADD: begin
                 {carry_out, result} = reg1 + reg2 + carry_in;
                 flag_v = (~(reg1[7] ^ reg2[7])) & (reg1[7] ^ result[7]);
             end
             
-            ALU_OP_SUB: begin
-                {carry_out, result} = reg1 - reg2 - (~carry_in);
-                flag_v =  (reg1[7] ^ reg2[7]) & (reg1[7] ^ result[7]);
+            `ALU_OP_SUB: begin
+					 {carry_out, result} = reg1 + (~reg2) + carry_in;
+					 flag_v = (~(reg1[7] ^ (~reg2[7]))) & (reg1[7] ^ result[7]);
             end
             
-            ALU_OP_AND: result = reg1 & reg2;
-            ALU_OP_OR:  result = reg1 | reg2;
-            ALU_OP_XOR: result = reg1 ^ reg2;
+            `ALU_OP_AND: result = reg1 & reg2;
+            `ALU_OP_OR:  result = reg1 | reg2;
+            `ALU_OP_XOR: result = reg1 ^ reg2;
             
-            ALU_OP_INC: result = reg1 + 1;
-            ALU_OP_DEC: result = reg1 - 1;
+            `ALU_OP_INC: result = reg1 + 1;
+            `ALU_OP_DEC: result = reg1 - 1;
             
-            ALU_OP_ASL: begin
+            `ALU_OP_ASL: begin
                 carry_out = reg1[7];
                 result = reg1 << 1;
             end
             
-            ALU_OP_LSR: begin
+            `ALU_OP_LSR: begin
                 carry_out = reg1[0];
                 result = reg1 >> 1;
             end
             
-            ALU_OP_ROL: begin
+            `ALU_OP_ROL: begin
                 carry_out = reg1[7];
                 result = (reg1 << 1);
                 result[0] = carry_in;
             end 
             
-            ALU_OP_ROR: begin
+            `ALU_OP_ROR: begin
                 carry_out = reg1[0];
                 result = (reg1 >> 1);
                 result[7] = carry_in;
             end
-				ALU_OP_PASS: begin
+				`ALU_OP_PASS: begin
 					 result = reg2;
 				end
 				default: begin

@@ -28,13 +28,13 @@ module decoder (
 
     always @(*) begin
         // Defaults
-        alu_op     = 0;
+        alu_op     = `ALU_OP_PASS;   // default seguro
         use_alu    = 0;
         mem_read   = 0;
         mem_write  = 0;
         instr_size = 2'd1;
         addr_mode  = IMPL;
-        instr_type = I_LDA;   // default seguro
+        instr_type = I_LDA;          // default seguro
 
         case (opcode)
 
@@ -43,9 +43,9 @@ module decoder (
                 instr_type = I_LDA;
                 addr_mode  = IMM;
                 instr_size = 2;
-                mem_read   = 1;
+                mem_read   = 0;
                 use_alu    = 1;
-                alu_op     = ALU_OP_PASS;
+                alu_op     = `ALU_OP_PASS;
             end
             8'hA5: begin // zeropage
                 instr_type = I_LDA;
@@ -53,7 +53,7 @@ module decoder (
                 instr_size = 2;
                 mem_read   = 1;
                 use_alu    = 1;
-                alu_op     = ALU_OP_PASS;
+                alu_op     = `ALU_OP_PASS;
             end
 
             // -------- STA --------
@@ -70,9 +70,9 @@ module decoder (
                 instr_type = I_ADC;
                 addr_mode  = IMM;
                 instr_size = 2;
-                mem_read   = 1;
+                mem_read   = 0;
                 use_alu    = 1;
-                alu_op     = ALU_OP_ADD;
+                alu_op     = `ALU_OP_ADD;
             end
 
             // -------- SBC --------
@@ -80,9 +80,9 @@ module decoder (
                 instr_type = I_SBC;
                 addr_mode  = IMM;
                 instr_size = 2;
-                mem_read   = 1;
+                mem_read   = 0;
                 use_alu    = 1;
-                alu_op     = ALU_OP_SUB;
+                alu_op     = `ALU_OP_SUB;
             end
 
             // -------- AND --------
@@ -90,9 +90,9 @@ module decoder (
                 instr_type = I_AND;
                 addr_mode  = IMM;
                 instr_size = 2;
-                mem_read   = 1;
+                mem_read   = 0;
                 use_alu    = 1;
-                alu_op     = ALU_OP_AND;
+                alu_op     = `ALU_OP_AND;
             end
 
             // -------- JMP --------
@@ -108,12 +108,13 @@ module decoder (
                 addr_mode  = IMPL;
                 instr_size = 1;
                 use_alu    = 1;
-                alu_op     = ALU_OP_INC;
+                alu_op     = `ALU_OP_INC;
             end
 
             default: begin
                 // Illegal / NOP
                 instr_size = 1;
+                alu_op     = `ALU_OP_PASS;
             end
         endcase
     end

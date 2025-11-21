@@ -22,6 +22,8 @@ module cpu_register(
 	
 );
 
+
+
 	always @(posedge clk or posedge reset) begin
 		
 		if (reset) begin
@@ -30,7 +32,7 @@ module cpu_register(
             Y  <= 8'h00;
             SP <= 8'hFD;     // SP inicial do 6502 real
             PS  <= 8'h34;     // padrão de reset
-            PC <= 16'h0000;  
+            PC <= 16'h1000;  
 		end else begin
 			  A <= we_a ? data_in : A;
 			  X <= we_x ? data_in : X;

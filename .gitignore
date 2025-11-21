@@ -5,3 +5,6 @@
 6502-softcore/alu.v.bak
 6502-softcore/.qsys_edit
 6502-softcore/greybox_tmp
+6502-softcore/control_unit.v.bak
+6502-softcore/sled_monitor.v.bak
+6502-softcore/top_level_cpu.v.bak
