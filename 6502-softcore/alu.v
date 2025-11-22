@@ -51,17 +51,22 @@ module alu(
                 result = reg1 >> 1;
             end
             
-            `ALU_OP_ROL: begin
-                carry_out = reg1[7];
-                result = (reg1 << 1);
-                result[0] = carry_in;
-            end 
+				// ROL A
+				`ALU_OP_ROL: begin
+					 carry_out = reg1[7];
+					 // Rotação: Shift left E insere carry_in no bit 0
+					 result = (reg1 << 1) | carry_in; // <-- Aqui garantimos que o carry_in entre no bit 0
+				end
             
-            `ALU_OP_ROR: begin
-                carry_out = reg1[0];
-                result = (reg1 >> 1);
-                result[7] = carry_in;
-            end
+            // Tente isso para ROR
+				`ALU_OP_ROR: begin
+					 carry_out = reg1[0];
+					 result = reg1 >> 1;
+					 if (carry_in)
+						  result[7] = 1'b1;
+					 else
+						  result[7] = 1'b0;
+				end
 				`ALU_OP_PASS: begin
 					 result = reg2;
 				end

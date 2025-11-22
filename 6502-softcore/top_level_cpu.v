@@ -28,6 +28,8 @@ module top_level_cpu(
     wire reset;
     wire [7:0] A_debug;
     wire [15:0] PC_debug;
+	 wire [7:0] X_debug;  // <--- NOVO: Sinal para X
+    wire [7:0] Y_debug;  // <--- NOVO: Sinal para Y
 
     // Inverte o reset (para ativo alto)
     assign reset = ~reset_n; 
@@ -37,10 +39,12 @@ module top_level_cpu(
     // ----------------------------------------------------------------
     // A CPU recebe o clock lento para andar passo-a-passo
     control_unit cpu_inst (
-        .clk(cpu_slow_clk),  // <--- MUDANÇA AQUI: Usa o clock lento
+        .clk(cpu_slow_clk), 
         .reset(reset),
-        .A_out(A_debug),    
-        .PC_out(PC_debug)   
+        .A_out(A_debug),   
+        .X_out(X_debug),   // <--- NOVO: Conecta X_out
+        .Y_out(Y_debug),   // <--- NOVO: Conecta Y_out
+        .PC_out(PC_debug) 
     );
     
     // ----------------------------------------------------------------
@@ -49,9 +53,11 @@ module top_level_cpu(
     // O monitor precisa do clock rápido para varrer os dígitos (multiplexação)
     // senão o display vai piscar visivelmente.
     cpu_monitor monitor_logic (
-        .clk(clk_50mhz),     // <--- MUDANÇA AQUI: Mantém 50MHz
+        .clk(clk_50mhz),
         .reset(reset),
         .A_reg(A_debug),
+        .X_reg(X_debug),   // <--- NOVO: Passa X para o monitor
+        .Y_reg(Y_debug),   // <--- NOVO: Passa Y para o monitor
         .PC_reg(PC_debug),
         .btn_n(btn_n),
         .seg(seg),
