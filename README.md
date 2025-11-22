@@ -5,13 +5,21 @@
 Este repositório contém a implementação completa de um processador simples de 8 bits projetado do zero em Verilog, incluindo:
 
 ✔ Arquitetura própria
+
 ✔ Registradores A, X, Y, PC, SP e PS
+
 ✔ Pipeline simples baseado em **FSM de 5 estágios**
+
 ✔ Instruções inspiradas no 6502 (ADC, SBC, LDA, BEQ, BNE…)
+
 ✔ Modos de endereçamento imediato, zeropage e absoluto
+
 ✔ Memória RAM 16 KB
+
 ✔ ALU completa com operações lógicas, aritméticas e shifts/rotates
+
 ✔ Interface de monitoramento via display de 7 segmentos
+
 ✔ Totalmente sintetizável na **Cyclone IV EP4CE6E22C8N**
 
 ---
