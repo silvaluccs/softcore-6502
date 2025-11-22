@@ -1,0 +1,11 @@
+6502-softcore/cpu_register.v.bak
+6502-softcore/db
+6502-softcore/incremental_db
+6502-softcore/output_files
+6502-softcore/alu.v.bak
+6502-softcore/.qsys_edit
+6502-softcore/greybox_tmp
+6502-softcore/control_unit.v.bak
+6502-softcore/sled_monitor.v.bak
+6502-softcore/top_level_cpu.v.bak
+6502-softcore/program.mif.bak
