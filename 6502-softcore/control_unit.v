@@ -173,11 +173,14 @@
 					  // Ajuste para INC/DEC:
 					  // Se o destino for Memória (INC/DEC), o reg1 deve ser o dado lido da memória (operand_val),
 					  // pois a ALU vai operar sobre ele. Caso contrário, é o Acumulador A.
-					  if (reg_dest_sig == DEST_MEM) begin
-							alu_reg1 = operand_val;
-					  end else if (reg_dest_sig == DEST_X) begin
-							// Para INX
-							 alu_reg1 = X;
+					  if (instr_type_sig == I_INC) begin
+							 alu_reg1 = operand_val;
+					  end else if (instr_type_sig == I_INX) begin
+							if (reg_dest_sig == DEST_Y) begin
+								alu_reg1 = Y; 
+							end else begin
+								alu_reg1 = X; 
+							end
 					  end else begin
 							 alu_reg1 = A;
 					  end

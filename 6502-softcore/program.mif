@@ -1,6 +1,6 @@
 -- Quartus II Memory Initialization File
--- Teste de Branching Condicional (BVC, BVS) do 6502
--- Versao 5: Teste de BVC / BVS (Overflow Flag)
+-- Objetivo: Testar INY (Opcode C8) e DEY (Opcode 88)
+-- ORG (Início do Programa): $1000
 WIDTH=8;
 DEPTH=16384;
 
@@ -10,130 +10,46 @@ DATA_RADIX=HEX;
 CONTENT BEGIN
 [0000..3FFF] : 00;
 
--- INICIALIZACAO
--- 1000: LDX #$00 (Zera o contador X)
-1000 : A2;
-1001 : 00;
+-- =========================================================
+-- PROGRAMA DE TESTE (ORG $1000)
+-- =========================================================
 
+-- 1. Inicializa Y com $01
+-- 1000: LDY #$01
+1000 : A0;
+1001 : 01;
 
-----------------------------------------------------------------
--- TESTE 1: BVS (Overflow Set) / BVC (Overflow Clear)
-----------------------------------------------------------------
+-- 2. Teste de INCREMENTO (INY)
+-- 1002: INY (Y = 01 + 1 = 02)
+1002 : C8;
 
--- Bloco A: Forca V = 1 (Overflow Set)
--- O overflow é setado quando uma soma com sinal resulta em um valor fora do range -128 a +127.
--- 1002: LDA #$60 (+96 decimal)
-1002 : A9;
-1003 : 60;
+-- 1003: INY (Y = 02 + 1 = 03)
+1003 : C8;
 
--- 1004: ADC #$60 (+96 decimal). 60 + 60 = C0 (192 decimal).
--- +96 + +96 = +192 (excede +127). V = 1.
-1004 : 69; 
-1005 : 60; 
+-- 3. Teste de DECREMENTO (DEY)
+-- 1004: DEY (Y = 03 - 1 = 02)
+1004 : 88;
 
--- Teste 1.1: BVS - Deve saltar (V=1)
--- 1006: BVS +03 (Salta para 100B)
-1006 : 70;
-1007 : 03; 
+-- 1005: DEY (Y = 02 - 1 = 01)
+1005 : 88;
 
--- 1008: INX (ERRO: Nao deve executar)
-1008 : E8;
+-- 1006: DEY (Y = 01 - 1 = 00) -> Aqui a Flag Z (Zero) deve ser setada.
+1006 : 88;
 
--- 1009: INX (Caminho de Salto. Salva em X = $02)
-1009 : E8;
-100A : E8;
--- (X agora e $02)
+-- 4. Teste de UNDERFLOW (00 -> FF)
+-- 1007: DEY (Y = 00 - 1 = FF) -> Aqui a Flag N (Negative) deve ser setada.
+1007 : 88;
 
--- 100B: JMP 100E (Vai para o proximo teste)
-100B : 4C;
-100C : 0E;
-100D : 10;
+-- 5. Teste de Recuperação (FF -> 00)
+-- 1008: INY (Y = FF + 1 = 00)
+1008 : C8;
 
--- Bloco B: Forca V = 0 (Overflow Clear)
--- 100E: LDA #$01
-100E : A9;
-100F : 01;
-
--- 1010: ADC #$01 (1 + 1 = 02. Nao ha overflow. V=0)
-1010 : 69;
-1011 : 01;
-
--- Teste 1.2: BVC - Deve saltar (V=0)
--- 1012: BVC +03 (Salta para 1017)
-1012 : 50;
-1013 : 03; 
-
--- 1014: INX (ERRO: Nao deve executar)
-1014 : E8;
-
--- 1015: INX (Caminho de Salto. Salva em X = $02 + $02 = $04)
-1015 : E8;
-1016 : E8;
--- (X agora e $04)
-
--- 1017: JMP 101A (Vai para o proximo teste)
-1017 : 4C;
-1018 : 1A;
-1019 : 10;
-
-----------------------------------------------------------------
--- TESTE 2: Branches que NÃO devem saltar
-----------------------------------------------------------------
-
--- Bloco C: Forca V = 0 (Overflow Clear)
--- 101A: LDA #$01
-101A : A9; 
-101B : 01;
-
--- 101C: ADC #$01 (V=0)
-101C : 69;
-101D : 01;
-
--- Teste 2.1: BVS - Nao deve saltar (V=0)
--- 101E: BVS +03 (Nao salta, PC avanca para 1021)
-101E : 70;
-101F : 03; 
-
--- 1020: INX (SUCESSO: Executa 1 byte. X = $04 + $01 = $05)
-1020 : E8;
--- (X agora e $05)
-
--- 1021: JMP 1024 (Vai para o proximo teste)
-1021 : 4C;
-1022 : 24;
-1023 : 10;
-
-
--- Bloco D: Forca V = 1 (Overflow Set)
--- 1024: LDA #$60 
-1024 : A9; 
-1025 : 60;
-
--- 1026: ADC #$60 (V=1)
-1026 : 69;
-1027 : 60;
-
--- Teste 2.2: BVC - Nao deve saltar (V=1)
--- 1028: BVC +03 (Nao salta, PC avanca para 102B)
-1028 : 50;
-1029 : 03; 
-
--- 102A: INX (SUCESSO: Executa 1 byte. X = $05 + $01 = $06)
-102A : E8;
--- (X agora e $06)
-
--- FIM DO PROGRAMA:
--- 102B: LDA #$AA (Seta o valor final de A para inspecao)
-102B : A9;
-102C : AA;
-
--- 102D: LDX #$A0 (Seta o valor final de X para inspecao)
-102D : A2;
-102E : A0;
-
--- 102F: JMP 102F (Loop infinito)
-102F : 4C;
-1030 : 2F;
-1031 : 10;
+-- =========================================================
+-- FIM DO PROGRAMA (LOOP INFINITO)
+-- =========================================================
+-- 1009: JMP $1009
+1009 : 4C;
+100A : 09;
+100B : 10;
 
 END;
