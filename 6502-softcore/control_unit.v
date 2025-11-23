@@ -28,11 +28,13 @@
 								SUB_CAPTURE  = 2'd2; // Captura o dado
 
 				 // Instruction types
-				 localparam I_LDA = 4'd0, I_STA = 4'd1, I_ADC = 4'd2, I_SBC = 4'd3,
-								I_AND = 4'd4, I_JMP = 4'd5, I_INX = 4'd6, I_ORA = 4'd7, 
-								I_XOR = 4'd8, I_INC = 4'd9, I_ASL = 4'd10, I_LSR = 4'd11,
-								I_ROL = 4'd12, I_ROR = 4'd13, I_BEQ = 4'd14, I_BNE=4'd15; 
-
+				localparam I_LDA = 8'd0, I_STA = 8'd1, I_ADC = 8'd2, I_SBC = 8'd3,
+							  I_AND = 8'd4, I_JMP = 8'd5, I_INX = 8'd6, I_ORA = 8'd7,  
+							  I_XOR = 8'd8, I_INC = 8'd9, I_ASL = 8'd10, I_LSR = 8'd11,
+							  I_ROL = 8'd12, I_ROR = 8'd13, I_BEQ = 8'd14, I_BNE = 8'd15,
+							  I_BCS = 8'd16, I_BCC=8'd17, I_BMI = 8'd18, I_BPL=8'd19, I_BVC=8'd20,
+							  I_BVS=8'd21; 
+				  
 				 // Register Destinations
 				 localparam DEST_NONE = 3'd0;
 				 localparam DEST_A    = 3'd1;
@@ -78,7 +80,7 @@
 				 wire [4:0] alu_op_sig;
 				 wire        use_alu_sig, mem_read_sig, mem_write_sig;
 				 wire [1:0] addr_mode_sig, instr_size_sig;
-				 wire [3:0] instr_type_sig;
+				 wire [7:0] instr_type_sig;
 				 wire [2:0] reg_dest_sig; // NOVO: Registrador de destino
 
 				 decoder decoder_inst (
@@ -306,6 +308,12 @@
 								 if (instr_type_sig == I_JMP) pc_in_reg = {operand_hi, operand_lo};
 								 else if (instr_type_sig == I_BEQ && PS[1]) pc_in_reg = PC + offset16;
 								 else if (instr_type_sig == I_BNE && !PS[1]) pc_in_reg = PC + offset16;
+								 else if (instr_type_sig == I_BCS && PS[0]) pc_in_reg = PC + offset16;
+								 else if (instr_type_sig == I_BCC && !PS[0]) pc_in_reg = PC + offset16;
+								 else if (instr_type_sig == I_BMI && PS[3]) pc_in_reg = PC + offset16;
+								 else if (instr_type_sig == I_BPL && !PS[3]) pc_in_reg = PC + offset16;
+								 else if (instr_type_sig == I_BVC && !PS[2]) pc_in_reg = PC + offset16;
+								 else if (instr_type_sig == I_BVS && PS[2]) pc_in_reg = PC + offset16;
 								 else begin
 									  if (instr_size_sig == 2'd1) pc_in_reg = PC + 16'd1;
 									  else if (instr_size_sig == 2'd2) pc_in_reg = PC + 16'd2;
