@@ -25,7 +25,7 @@ module decoder (
 				  I_XOR = 8'd8, I_INC = 8'd9, I_ASL = 8'd10, I_LSR = 8'd11,
 				  I_ROL = 8'd12, I_ROR = 8'd13, I_BEQ = 8'd14, I_BNE = 8'd15,
 				  I_BCS = 8'd16, I_BCC=8'd17, I_BMI = 8'd18, I_BPL=8'd19, I_BVC=8'd20,
-				  I_BVS=8'd21; 
+				  I_BVS=8'd21, I_TA=8'd22, I_TX=8'd23, I_TY=8'd24, I_TS=8'd25; 
 
 	 // Register Destinations (reg_dest)
 	 localparam DEST_NONE = 3'd0; // Nenhuma escrita em Registrador (Ex: STA, JMP)
@@ -33,6 +33,7 @@ module decoder (
 	 localparam DEST_X    = 3'd2; // Index X (Ex: INX)
 	 localparam DEST_Y    = 3'd3; // Index Y
 	 localparam DEST_MEM  = 3'd4; // Memória (Ex: INC/DEC que volta pra RAM)
+	 localparam DEST_SP   = 3'd5;
 
 
 	 always @(*) begin
@@ -254,6 +255,47 @@ module decoder (
 					 reg_dest   = DEST_Y; // Salva em Y
 				end
 
+				// -------- TAY --------
+				8'hA8: begin
+					 instr_type = I_TA; addr_mode  = IMPL; instr_size = 1;
+					 use_alu    = 1; alu_op     = `ALU_OP_PASS;
+					 reg_dest   = DEST_Y; 
+				end		
+				
+				// -------- TAX --------
+				8'hAA: begin
+					 instr_type = I_TA; addr_mode  = IMPL; instr_size = 1;
+					 use_alu    = 1; alu_op     = `ALU_OP_PASS;
+					 reg_dest   = DEST_X; 
+				end				
+				
+				// -------- TSX --------
+				8'hBA: begin
+					 instr_type = I_TS; addr_mode  = IMPL; instr_size = 1;
+					 use_alu    = 1; alu_op     = `ALU_OP_PASS;
+					 reg_dest   = DEST_X; 
+				end		
+				
+				// -------- TXS --------
+				8'h9A: begin
+					 instr_type = I_TX; addr_mode  = IMPL; instr_size = 1;
+					 use_alu    = 1; alu_op     = `ALU_OP_PASS;
+					 reg_dest   = DEST_SP; 
+				end	
+				
+				// -------- TXA --------
+				8'h8A: begin
+					 instr_type = I_TX; addr_mode  = IMPL; instr_size = 1;
+					 use_alu    = 1; alu_op     = `ALU_OP_PASS;
+					 reg_dest   = DEST_A; 
+				end
+				
+				// -------- TYA --------
+				8'h98: begin
+					 instr_type = I_TY; addr_mode  = IMPL; instr_size = 1;
+					 use_alu    = 1; alu_op     = `ALU_OP_PASS;
+					 reg_dest   = DEST_A; 
+				end
 
 				default: begin
 					 instr_size = 1;
