@@ -33,9 +33,10 @@ module control_unit(
                I_XOR = 8'd8, I_INC = 8'd9, I_ASL = 8'd10, I_LSR = 8'd11,
                I_ROL = 8'd12, I_ROR = 8'd13, I_BEQ = 8'd14, I_BNE = 8'd15,
                I_BCS = 8'd16, I_BCC = 8'd17, I_BMI = 8'd18, I_BPL = 8'd19, I_BVC = 8'd20,
-               I_BVS = 8'd21, I_TA = 8'd22, I_TX = 8'd23, I_TY = 8'd24, I_TS = 8'd25, // <-- PONTO E VÍRGULA CORRIGIDO (era vírgula ou faltava)
-               I_CMP=8'd26, I_CPX=8'd27, I_CPY=8'd28;
-     
+				       I_BVS=8'd21, I_TA=8'd22, I_TX=8'd23, I_TY=8'd24, I_TS=8'd25,
+               I_CMP=8'd26, I_CPX=8'd27, I_CPY=8'd28, I_SET_CARRY=8'd29, I_CLR_CARRY=8'd30,
+               I_SET_IRQ=8'd31, I_CLR_IRQ=8'd32, I_SET_CLD=8'd33, I_CLR_CLD=8'd34, I_CLR_CLV=8'd35;
+
     // Register Destinations
     localparam DEST_NONE = 3'd0;
     localparam DEST_A    = 3'd1;
@@ -57,7 +58,7 @@ module control_unit(
     reg  [15:0] pc_in_reg;
 
 
-    wire [7:0] flags_in_sig;
+    reg [7:0] flags_in_sig;
    
 
     // Instâncias
@@ -113,7 +114,6 @@ module control_unit(
     );
 
 
-    assign flags_in_sig[3:0] = alu_flags; 
     
     wire [7:0] off = operand_lo;
     wire [15:0] offset16 = (off[7] ? {8'hFF, off} : {8'h00, off}) + 16'd2;
@@ -241,6 +241,9 @@ module control_unit(
           alu_cin = PS[0];
         end
 
+        
+
+
         next_stage = current_stage;
         next_sub   = current_sub;
 
@@ -315,6 +318,39 @@ module control_unit(
                 
                 // Ativa escrita de flags (exceto para JMP e Stores puros)
                 we_ps_sig = (reg_dest_sig != DEST_NONE) && (instr_type_sig != I_JMP) && (!mem_write_sig); 
+
+                if (instr_type_sig == I_SET_CARRY) begin
+                    flags_in_sig[0] = 1'b1; // Seta Carry
+                end else if (instr_type_sig == I_CLR_CARRY) begin
+                    flags_in_sig[0] = 1'b0; // Limpa Carry
+                end else if (instr_type_sig == I_SET_IRQ) begin
+                    flags_in_sig[2] = 1'b1; // Seta IRQ Disable
+
+                end else if (instr_type_sig == I_CLR_IRQ) begin
+                    flags_in_sig[2] = 1'b0; // Limpa IRQ Disable
+                end else if (instr_type_sig == I_SET_CLD) begin
+                    flags_in_sig[3] = 1'b0; // Limpa Decimal Mode
+                end else if (instr_type_sig == I_CLR_CLD) begin
+                    flags_in_sig[3] = 1'b1; // Seta Decimal Mode
+                end else if (instr_type_sig == I_CLR_CLV) begin
+                    flags_in_sig[6] = 1'b0; // Limpa Overflow 
+
+                end else if (use_alu_sig) begin
+                    flags_in_sig[0] = alu_flags[0]; // Carry in
+                    flags_in_sig[1] = alu_flags[1]; // Zero
+                    flags_in_sig[6] = alu_flags[2]; // Overflow
+                    flags_in_sig[7] = alu_flags[3]; // Negative
+
+                    flags_in_sig[2] = PS[2]; // Mantém IRQ Disable
+                    flags_in_sig[3] = PS[3]; // Mantém Decimal Mode
+                    flags_in_sig[4] = PS[4]; // Mantém Break Command
+                    flags_in_sig[5] = 1'b1; // Bit 5 sempre 1'
+
+                end else begin
+                    flags_in_sig = PS; // Mantém os flags atuais
+                end
+    
+            
 
                 if (mem_write_sig) begin
                     w_ram = 1; 

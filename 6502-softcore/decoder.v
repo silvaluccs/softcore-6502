@@ -27,7 +27,8 @@ module decoder (
 				  I_ROL = 8'd12, I_ROR = 8'd13, I_BEQ = 8'd14, I_BNE = 8'd15,
 				  I_BCS = 8'd16, I_BCC=8'd17, I_BMI = 8'd18, I_BPL=8'd19, I_BVC=8'd20,
 				  I_BVS=8'd21, I_TA=8'd22, I_TX=8'd23, I_TY=8'd24, I_TS=8'd25,
-          I_CMP=8'd26, I_CPX=8'd27, I_CPY=8'd28;
+          I_CMP=8'd26, I_CPX=8'd27, I_CPY=8'd28, I_SET_CARRY=8'd29, I_CLR_CARRY=8'd30,
+          I_SET_IRQ=8'd31, I_CLR_IRQ=8'd32, I_SET_CLD=8'd33, I_CLR_CLD=8'd34, I_CLR_CLV=8'd35;
 
 	 // Register Destinations (reg_dest)
 	 localparam DEST_NONE = 3'd0; // Nenhuma escrita em Registrador (Ex: STA, JMP)
@@ -52,7 +53,44 @@ module decoder (
 		  reg_dest   = DEST_NONE; // Novo default
 
 		  case (opcode)
-			 
+
+        8'hB8: begin // CLV
+           instr_type = I_CLR_CLV; addr_mode  = IMPL; instr_size = 1;
+           reg_dest   = DEST_PS;
+        end
+
+        // Set/Clear Decimal Flag
+        8'hD8: begin // CLD
+           instr_type = I_CLR_CLD; addr_mode  = IMPL; instr_size = 1;
+           reg_dest   = DEST_PS;
+        end 
+
+        8'hF8: begin // SED
+           instr_type = I_SET_CLD; addr_mode  = IMPL; instr_size = 1;
+           reg_dest   = DEST_PS;
+        end
+
+        8'h58: begin // CLI
+           instr_type = I_CLR_IRQ; addr_mode  = IMPL; instr_size = 1;
+           reg_dest   = DEST_PS;
+        end
+
+        8'h78: begin // SEI
+           instr_type = I_SET_IRQ; addr_mode  = IMPL; instr_size = 1;
+           reg_dest   = DEST_PS;
+        end
+
+        // Set/Clear Carry Flag
+        8'h38: begin // SEC
+           instr_type = I_SET_CARRY; addr_mode  = IMPL; instr_size = 1;
+           reg_dest   = DEST_PS;
+        end
+
+        8'h18: begin // CLC
+           instr_type = I_CLR_CARRY; addr_mode  = IMPL; instr_size = 1;
+           reg_dest   = DEST_PS;
+        end			 
+
 				// -------- Shifts/Rotates (A) --------
 				8'h6A: begin // ROR A
 					 instr_type = I_ROR; 
@@ -172,6 +210,15 @@ module decoder (
 					 instr_type = I_ADC; addr_mode  = IMM; instr_size = 2;
 					 use_alu    = 1; alu_op     = `ALU_OP_ADD; reg_dest  = DEST_A;
 				end
+
+        // NOP 
+        8'hEA: begin
+           instr_type = I_LDA; addr_mode  = IMPL; instr_size = 1;
+           mem_read   = 0; use_alu    = 0; 
+           alu_op     = `ALU_OP_PASS;
+           reg_dest   = DEST_NONE; // Nao faz nada
+        end
+
 				8'hE9: begin // SBC Imm
 					 instr_type = I_SBC; addr_mode  = IMM; instr_size = 2;
 					 use_alu    = 1; alu_op     = `ALU_OP_SUB; reg_dest  = DEST_A;
