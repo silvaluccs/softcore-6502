@@ -20,6 +20,8 @@ module cpu_monitor(
     output wire [7:0] seg,         
     output wire [3:0] dig          
 );
+  
+    
 
     // ----------------------------------------------------------------
     // 1. Lógica de Seleção de Dados (Baseada nos botões)
