@@ -33,7 +33,8 @@ module control_unit(
                I_XOR = 8'd8, I_INC = 8'd9, I_ASL = 8'd10, I_LSR = 8'd11,
                I_ROL = 8'd12, I_ROR = 8'd13, I_BEQ = 8'd14, I_BNE = 8'd15,
                I_BCS = 8'd16, I_BCC = 8'd17, I_BMI = 8'd18, I_BPL = 8'd19, I_BVC = 8'd20,
-               I_BVS = 8'd21, I_TA = 8'd22, I_TX = 8'd23, I_TY = 8'd24, I_TS = 8'd25; // <-- PONTO E VÍRGULA CORRIGIDO (era vírgula ou faltava)
+               I_BVS = 8'd21, I_TA = 8'd22, I_TX = 8'd23, I_TY = 8'd24, I_TS = 8'd25, // <-- PONTO E VÍRGULA CORRIGIDO (era vírgula ou faltava)
+               I_CMP=8'd26, I_CPX=8'd27, I_CPY=8'd28;
      
     // Register Destinations
     localparam DEST_NONE = 3'd0;
@@ -42,6 +43,7 @@ module control_unit(
     localparam DEST_Y    = 3'd3;
     localparam DEST_MEM  = 3'd4;
     localparam DEST_SP   = 3'd5;
+    localparam DEST_PS   = 3'd6;
 
     // Registradores de Estado
     reg [2:0] current_stage, next_stage;
@@ -54,6 +56,10 @@ module control_unit(
     wire [15:0] PC;
     reg  [15:0] pc_in_reg;
 
+
+    wire [7:0] flags_in_sig;
+   
+
     // Instâncias
     cpu_register cpu_register_inst (
         .clk(clk), .reset(reset),
@@ -62,10 +68,7 @@ module control_unit(
         .data_in(cpu_data_in), .pc_in(pc_in_reg), .flags_in(flags_in_sig),
         .A(A), .X(X), .Y(Y), .SP(SP), .PC(PC), .PS(PS)
     );
-
-    wire [7:0] flags_in_sig;
-   
-    assign flags_in_sig[3:0] = alu_flags; 
+    
     
     reg  [15:0] ram_address;
     reg  [7:0]  ram_data_in;
@@ -84,6 +87,7 @@ module control_unit(
     wire [7:0] instr_type_sig;
     wire [2:0] reg_dest_sig; 
 
+
     decoder decoder_inst (
         .opcode(opcode), .alu_op(alu_op_sig), .use_alu(use_alu_sig),
         .mem_read(mem_read_sig), .mem_write(mem_write_sig),
@@ -101,10 +105,15 @@ module control_unit(
     wire [7:0] alu_result;
     wire [3:0] alu_flags;
 
+
+
     alu alu_inst (
         .alu_op(alu_op_sig), .reg1(alu_reg1), .reg2(alu_reg2),
         .carry_in(alu_cin), .result(alu_result), .flags(alu_flags)
     );
+
+
+    assign flags_in_sig[3:0] = alu_flags; 
     
     wire [7:0] off = operand_lo;
     wire [15:0] offset16 = (off[7] ? {8'hFF, off} : {8'h00, off}) + 16'd2;
@@ -186,10 +195,10 @@ module control_unit(
              end
         end 
         // CORREÇÃO PARA TRANSFERÊNCIAS:
-        else if (instr_type_sig == I_TX) begin // TXA, TXS
+        else if (instr_type_sig == I_TX || instr_type_sig == I_CPX) begin // TXA, TXS
              alu_reg1 = X;
         end
-        else if (instr_type_sig == I_TY) begin // TYA
+        else if (instr_type_sig == I_TY || instr_type_sig == I_CPY) begin // TYA
              alu_reg1 = Y;
         end
         else if (instr_type_sig == I_TS) begin // TSX
@@ -226,7 +235,11 @@ module control_unit(
         // Nota: Como sua ALU em ALU_OP_PASS passa 'reg2', a lógica acima para alu_reg2
         // garante que a fonte correta (A, X, Y, SP) chegue na saída da ALU.
         
-        alu_cin = PS[0];
+        if (instr_type_sig == I_CMP || instr_type_sig == I_CPX || instr_type_sig == I_CPY) begin
+          alu_cin = 1'b1; // Para comparação, configura carry_in para 1
+        end else begin
+          alu_cin = PS[0];
+        end
 
         next_stage = current_stage;
         next_sub   = current_sub;

@@ -1,5 +1,6 @@
 `include "alu_defines.vh"
 
+
 module decoder (
 	 input  wire [7:0] opcode,
 	 output reg  [4:0] alu_op,
@@ -25,7 +26,8 @@ module decoder (
 				  I_XOR = 8'd8, I_INC = 8'd9, I_ASL = 8'd10, I_LSR = 8'd11,
 				  I_ROL = 8'd12, I_ROR = 8'd13, I_BEQ = 8'd14, I_BNE = 8'd15,
 				  I_BCS = 8'd16, I_BCC=8'd17, I_BMI = 8'd18, I_BPL=8'd19, I_BVC=8'd20,
-				  I_BVS=8'd21, I_TA=8'd22, I_TX=8'd23, I_TY=8'd24, I_TS=8'd25; 
+				  I_BVS=8'd21, I_TA=8'd22, I_TX=8'd23, I_TY=8'd24, I_TS=8'd25,
+          I_CMP=8'd26, I_CPX=8'd27, I_CPY=8'd28;
 
 	 // Register Destinations (reg_dest)
 	 localparam DEST_NONE = 3'd0; // Nenhuma escrita em Registrador (Ex: STA, JMP)
@@ -34,6 +36,8 @@ module decoder (
 	 localparam DEST_Y    = 3'd3; // Index Y
 	 localparam DEST_MEM  = 3'd4; // Memória (Ex: INC/DEC que volta pra RAM)
 	 localparam DEST_SP   = 3'd5;
+   localparam DEST_PS   = 3'd6;
+
 
 
 	 always @(*) begin
@@ -129,6 +133,39 @@ module decoder (
 					 instr_type = I_STA; addr_mode  = ZP; instr_size = 2;
 					 mem_write  = 1; reg_dest   = DEST_Y; // Não salva em registrador
 				end
+
+        // -------- CMP A --------
+        8'hC9: begin // CMP Imm
+           instr_type = I_CMP; addr_mode  = IMM; instr_size = 2;
+            use_alu    = 1; alu_op     = `ALU_OP_SUB; reg_dest  = DEST_PS;
+        end
+
+        8'hC5: begin // CMP ZP
+            instr_type = I_CMP; addr_mode  = ZP; instr_size = 2; mem_read   = 1;
+            use_alu    = 1; alu_op     = `ALU_OP_SUB; reg_dest  = DEST_PS;
+        end
+
+        // -------- CPX --------
+        8'hE0: begin // CPX Imm
+           instr_type = I_CPX; addr_mode  = IMM; instr_size = 2;
+            use_alu    = 1; alu_op     = `ALU_OP_SUB; reg_dest  = DEST_PS;
+        end
+
+        8'hE4: begin // CPX ZP
+            instr_type = I_CPX; addr_mode  = ZP; instr_size = 2; mem_read   = 1;
+            use_alu    = 1; alu_op     = `ALU_OP_SUB; reg_dest  = DEST_PS;
+        end
+
+        // -------- CPY --------
+        8'hC0: begin // CPY Imm
+           instr_type = I_CPY; addr_mode  = IMM; instr_size = 2;
+            use_alu    = 1; alu_op     = `ALU_OP_SUB; reg_dest  = DEST_PS;
+        end 
+
+        8'hC4: begin // CPY ZP
+            instr_type = I_CPY; addr_mode  = ZP; instr_size = 2; mem_read   = 1;
+            use_alu    = 1; alu_op     = `ALU_OP_SUB; reg_dest  = DEST_PS;
+        end
 
 				// -------- ADC, SBC, AND, OR, XOR (Sempre salva em A) --------
 				8'h69: begin // ADC Imm
