@@ -7,19 +7,24 @@ module decoder (
 	 output reg        use_alu,
 	 output reg        mem_read,
 	 output reg        mem_write,
-	 output reg  [1:0] addr_mode,    // 00=implied, 01=imm, 02=zp, 03=abs
+	 output reg  [3:0] addr_mode,    // 00=implied, 01=imm, 02=zp, 03=abs
 	 output reg  [1:0] instr_size,   // 1,2,3 bytes
 	 output reg  [7:0] instr_type,   // Tipo de instrução
 	 output reg  [2:0] reg_dest      // NOVO: Registrador de destino
 );
 
 	 // Addressing modes
-	 localparam IMPL = 2'd0;
-	 localparam IMM  = 2'd1;
-	 localparam ZP   = 2'd2;
-	 localparam ABS  = 2'd3;
+     localparam IMPL = 4'd0;
+    localparam IMM  = 4'd1; 
+    localparam ZP   = 4'd2;
+    localparam ABS  = 4'd3;
+    localparam ZPX  = 4'd4;
+    localparam ZPY  = 4'd5;
+    localparam ABX  = 4'd6;
+    localparam ABY  = 4'd7;
+    localparam INDX = 4'd8;
+    localparam INDY = 4'd9;	 // Instruction types
 
-	 // Instruction types
 	// Instruction types (8 bits de largura)
 	localparam I_LDA = 8'd0, I_STA = 8'd1, I_ADC = 8'd2, I_SBC = 8'd3,
 				  I_AND = 8'd4, I_JMP = 8'd5, I_INX = 8'd6, I_ORA = 8'd7,  
@@ -128,6 +133,45 @@ module decoder (
 					 mem_read   = 1; use_alu    = 0;
 					 reg_dest   = DEST_A; // Salva em A
 				end
+
+        8'hB5: begin // zeropage,X
+           instr_type = I_LDA; addr_mode  = ZPX; instr_size = 2;
+           mem_read   = 1; use_alu    = 0;
+           reg_dest   = DEST_A; // Salva em A
+        end
+
+
+        8'hAD: begin // absolute
+           instr_type = I_LDA; addr_mode  = ABS; instr_size = 3;
+           mem_read   = 1; use_alu    = 0;
+           reg_dest   = DEST_A; // Salva em A
+          
+        end
+
+        8'hBD: begin // absolute,X
+           instr_type = I_LDA; addr_mode  = ABX; instr_size = 3;
+           mem_read   = 1; use_alu    = 0;
+           reg_dest   = DEST_A; // Salva em A
+        end
+
+        8'hB9: begin // absolute,Y
+           instr_type = I_LDA; addr_mode  = ABY; instr_size = 3;
+           mem_read   = 1; use_alu    = 0;
+           reg_dest   = DEST_A; // Salva em A
+        end
+
+        8'hA1: begin // (indirect,X)
+           instr_type = I_LDA; addr_mode  = INDX; instr_size = 2;
+           mem_read   = 1; use_alu    = 0;
+           reg_dest   = DEST_A; // Salva em A
+        end
+
+        8'hB1: begin // (indirect),Y
+           instr_type = I_LDA; addr_mode  = INDY; instr_size = 2;
+           mem_read   = 1; use_alu    = 0;
+           reg_dest   = DEST_A; // Salva em A
+        end
+
 				
 				 // -------- LDX --------
 				8'hA2: begin // immediate
@@ -140,6 +184,23 @@ module decoder (
 					 mem_read   = 1; use_alu    = 0;
 					 reg_dest   = DEST_X; // Salva em X
 				end
+        8'hB6: begin // zeropage,Y
+           instr_type = I_LDA; addr_mode  = ZPY; instr_size = 2;
+           mem_read   = 1; use_alu    = 0;
+           reg_dest   = DEST_X; // Salva em X'
+        end
+
+        8'hAE: begin // absolute
+           instr_type = I_LDA; addr_mode  = ABS; instr_size = 3;
+           mem_read   = 1; use_alu    = 0;
+           reg_dest   = DEST_X; // Salva em X'
+        end
+
+        8'hBE: begin // absolute,Y
+           instr_type = I_LDA; addr_mode  = ABY; instr_size = 3;
+           mem_read   = 1; use_alu    = 0;
+           reg_dest   = DEST_X; // Salva em X'
+        end
 				
 								 // -------- LDY --------
 				8'hA0: begin // immediate
@@ -154,23 +215,92 @@ module decoder (
 					 reg_dest   = DEST_Y; // Salva em Y
 				end
 
+        8'hB4: begin // zeropage,X
+           instr_type = I_LDA; addr_mode  = ZPX; instr_size = 2;
+           mem_read   = 1; use_alu    = 0;
+           reg_dest   = DEST_Y; // Salva em Y
+        end
+
+        8'hAC: begin // absolute
+           instr_type = I_LDA; addr_mode  = ABS; instr_size = 3;
+           mem_read   = 1; use_alu    = 0;
+           reg_dest   = DEST_Y; // Salva em Y
+        end
+
+        8'hBC: begin // absolute,X
+           instr_type = I_LDA; addr_mode  = ABX; instr_size = 3;
+           mem_read   = 1; use_alu    = 0;
+           reg_dest   = DEST_Y; // Salva em Y
+        end
+
 				// -------- STA --------
 				8'h85: begin // zeropage
 					 instr_type = I_STA; addr_mode  = ZP; instr_size = 2;
 					 mem_write  = 1; reg_dest   = DEST_A; // Não salva em registrador
 				end
+
+        8'h95: begin // zeropage,X
+           instr_type = I_STA; addr_mode  = ZPX; instr_size = 2;
+           mem_write  = 1; reg_dest   = DEST_A; // Não salva em registrador
+        end
+
+        8'h8D: begin // absolute
+           instr_type = I_STA; addr_mode  = ABS; instr_size = 3;
+           mem_write  = 1; reg_dest   = DEST_A; // Não salva em registrador
+        end
+
+        8'h9D: begin // absolute,X
+           instr_type = I_STA; addr_mode  = ABX; instr_size = 3;
+           mem_write  = 1; reg_dest   = DEST_A; // Não salva em registrador
+        end
+
+        8'h99: begin // absolute,Y
+           instr_type = I_STA; addr_mode  = ABY; instr_size = 3;
+           mem_write  = 1; reg_dest   = DEST_A; // Não salva em registrador
+        end
+
+        8'h81: begin // (indirect,X)
+           instr_type = I_STA; addr_mode  = INDX; instr_size = 2;
+           mem_write  = 1; reg_dest   = DEST_A; // Não salva em registrador
+        end
+
+        8'h91: begin // (indirect),Y
+           instr_type = I_STA; addr_mode  = INDY; instr_size = 2;
+           mem_write  = 1; reg_dest   = DEST_A; // Não salva em registrador
+        end
+
 				
 				 // -------- STX --------
 				8'h86: begin // zeropage
 					 instr_type = I_STA; addr_mode  = ZP; instr_size = 2;
 					 mem_write  = 1; reg_dest   = DEST_X; // Não salva em registrador
 				end
+
+        8'h96: begin // zeropage,Y
+           instr_type = I_STA; addr_mode  = ZPY; instr_size = 2;
+           mem_write  = 1; reg_dest   = DEST_X; // Não salva em registrador
+        end
+
+        8'h8E: begin // absolute
+           instr_type = I_STA; addr_mode  = ABS; instr_size = 3;
+           mem_write  = 1; reg_dest   = DEST_X; // Não salva em registrador
+        end
 				
 								 // -------- STY --------
 				8'h84: begin // zeropage
 					 instr_type = I_STA; addr_mode  = ZP; instr_size = 2;
 					 mem_write  = 1; reg_dest   = DEST_Y; // Não salva em registrador
 				end
+
+        8'h94: begin // zeropage,X
+           instr_type = I_STA; addr_mode  = ZPX; instr_size = 2;
+           mem_write  = 1; reg_dest   = DEST_Y; // Não salva em registrador
+        end
+        
+        8'h8C: begin // absolute
+           instr_type = I_STA; addr_mode  = ABS; instr_size = 3;
+           mem_write  = 1; reg_dest   = DEST_Y; // Não salva em registrador
+        end
 
         // -------- CMP A --------
         8'hC9: begin // CMP Imm
