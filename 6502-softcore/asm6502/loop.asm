@@ -1,139 +1,122 @@
-; ========================================
-; TESTE COMPLETO DE INDX E INDY
-; ========================================
-; Endereços de Status:
-; $00FE = Progresso do teste (qual teste passou)
-; $00FF = Status Final (0=Falha, 1=Sucesso Total)
-; ========================================
 
-SETUP:
-    ; Limpa status
+START:
+    LDX #$01               ; X = 1 (Offset)
+    LDY #$01               ; Y = 1 (Offset)
+    
+    ; --- Inicializa os bytes de dados na memória ---
+    ; ZP_ADDR = $02
+    ; ABS_ADDR = $2000
+    ; IND_ADDR = $4000
+    
+    LDA #$20
+    STA $02                ; ZP_ADDR
+    STA $02,X              ; $03 (ZP_ADDR,X)
+    STA $2000              ; ABS_ADDR
+    STA $2000,X            ; $2001 (ABS_ADDR,X)
+    STA $2000,Y            ; $2001 (ABS_ADDR,Y)
+    
+    ; Configuração dos Alvos Indiretos
+    STA $4000              ; IND_ADDR 1
+    STA $4000,Y            ; IND_ADDR 2
+
+; =================================================================
+; PARTE 1: TESTE SEM CARRY (CLC)
+; CLC -> C=0. Esperado: $10 + $20 + 0 = $30
+; =================================================================
+
+    LDA #$10               ; Valor inicial A = $10
+    CLC                    ; Clear Carry (C=0)
+
+    ; 1. ADC IMM ($69)
+    ADC #$20               ; $10 + $20 + 0 = $30
+    CMP #$30
+    BNE FAIL
+    
+    ; 2. ADC ZP ($65)
+    LDA #$10
+    ADC $02                ; $10 + $20 + 0 = $30
+    CMP #$30
+    BNE FAIL
+
+    ; 3. ADC ZP,X ($75)
+    LDA #$10
+    ADC $02,X              ; $10 + $20 + 0 = $30 (Alvo $03)
+    CMP #$30
+    BNE FAIL
+    
+    ; 4. ADC ABS ($6D)
+    LDA #$10
+    ADC $2000              ; $10 + $20 + 0 = $30
+    CMP #$30
+    BNE FAIL
+
+    ; 5. ADC ABS,X ($7D)
+    LDA #$10
+    ADC $2000,X            ; $10 + $20 + 0 = $30 (Alvo $2001)
+    CMP #$30
+    BNE FAIL
+    
+    ; 6. ADC ABS,Y ($79)
+    LDA #$10
+    ADC $2000,Y            ; $10 + $20 + 0 = $30 (Alvo $2001)
+    CMP #$30
+    BNE FAIL
+
+    ; 7. ADC (INDX) ($61)
+    ; PTR_BASE = $30. X=1. Endereço efetivo em $31/$32. Alvo $4000.
     LDA #$00
-    STA $00FE       ; Progresso = 0
-    STA $00FF       ; Status = 0 (Falha)
+    STA $31                ; Salva $00 em $31 (Low byte)
+    LDA #$40
+    STA $32                ; Salva $40 em $32 (High byte)
+    
+    LDA #$10
+    ADC ($30,X)            ; $10 + $20 + 0 = $30
+    CMP #$30
+    BNE FAIL
 
-TEST1_INDX_SIMPLE:
-    ; Prepara ponteiro
-    LDA #$00        ; Low byte de $3000
-    STA $20
-    LDA #$30        ; High byte de $3000
-    STA $21
+    ; 8. ADC (INDY) ($71)
+    ; PTR_BASE = $30. Y=1. Ponteiro em $30/$31. Alvo $4000 + 1 = $4001.
+    LDA #$00
+    STA $30                ; Salva $00 em $30
+    LDA #$40
+    STA $31                ; Salva $40 em $31
     
-    ; Escreve dado na memória alvo
-    LDA #$AA
-    STA $3000
-    
-    ; Testa leitura
-    LDX #$00        ; Ponteiro em $20+0 = $20
-    LDA ($20, X)    ; Lê de ($20) = $3000
-    CMP #$AA
+    LDA #$10
+    ADC ($30),Y            ; $10 + $20 + 0 = $30
+    CMP #$30
+    BNE FAIL
+
+
+; =================================================================
+; PARTE 2: TESTE COM CARRY (SEC) e Overflow
+; SEC -> C=1. Teste de Overflow: $80 + $80 + 1 = $01 (C=1)
+; =================================================================
+
+    SEC                    ; Set Carry (C=1)
+
+    ; 1. ADC IMM (Teste de Overflow/Carry)
+    LDA #$80
+    ADC #$80               ; $80 + $80 + 1 = $01 (com Carry setado)
+    CMP #$01
+    BNE FAIL               
+
+    ; ADC ZP ($65) com Carry (Teste de Zero Flag e Carry)
+    LDA #$00
+    STA $02                ; $02 = $00
+    SEC
+    LDA #$FF               ; $FF (-1)
+    ADC $02                ; $FF + $00 + 1 = $00 (com Carry setado)
+    CMP #$00
     BNE FAIL
     
-    ; Marca progresso
-    LDA #$01
-    STA $00FE
 
-; ========================================
-; TESTE 2: INDX COM OFFSET
-; ========================================
-; Configuração:
-; - Ponteiro em $22-$23 = $3100
-; - Dado em $3100 = $BB
-; - X = $02 (ponteiro em $20+2 = $22)
-; ========================================
-TEST2_INDX_OFFSET:
-    ; Prepara ponteiro
-    LDA #$00        ; Low byte de $3100
-    STA $22
-    LDA #$31        ; High byte de $3100
-    STA $23
-    
-    ; Escreve dado
-    LDA #$BB
-    STA $3100
-    
-    ; Testa leitura
-    LDX #$02        ; Ponteiro em $20+2 = $22
-    LDA ($20, X)    ; Lê de ($22) = $3100
-    CMP #$BB
-    BNE FAIL
-    
-    ; Marca progresso
-    LDA #$02
-    STA $00FE
-
-; ========================================
-; TESTE 3: INDY SIMPLES
-; ========================================
-; Configuração:
-; - Ponteiro em $40-$41 = $3200
-; - Dado em $3200 = $CC
-; - Y = $00 (sem offset)
-; ========================================
-TEST3_INDY_SIMPLE:
-    ; Prepara ponteiro
-    LDA #$00        ; Low byte de $3200
-    STA $40
-    LDA #$32        ; High byte de $3200
-    STA $41
-    
-    ; Escreve dado
-    LDA #$CC
-    STA $3200
-    
-    ; Testa leitura
-    LDY #$00        ; Offset = 0
-    LDA ($40), Y    ; Lê de ($40)+0 = $3200
-    CMP #$CC
-    BNE FAIL
-    
-    ; Marca progresso
-    LDA #$03
-    STA $00FE
-
-; ========================================
-; TESTE 4: INDY COM OFFSET
-; ========================================
-; Configuração:
-; - Ponteiro em $40-$41 = $3200 (reusa do teste anterior)
-; - Dado em $3205 = $DD
-; - Y = $05 (offset)
-; ========================================
-TEST4_INDY_OFFSET:
-    ; Escreve dado (ponteiro já configurado)
-    LDA #$DD
-    STA $3205
-    
-    ; Testa leitura
-    LDY #$05        ; Offset = 5
-    LDA ($40), Y    ; Lê de ($40)+5 = $3205
-    CMP #$DD
-    BNE FAIL
-    
-    ; Marca progresso
-    LDA #$04
-    STA $00FE
-
-; ========================================
-; TESTE 5: INDX WRAP ZERO PAGE
-; ========================================
-; Configuração:
-; - Ponteiro em $FE-$FF (wrap) = $3300
-; - Dado em $3300 = $EE
-; - X = $FE
-; ========================================
-; ========================================
-; SUCESSO!
-; ========================================
+; -------------------------------------------------
+; FINALIZAÇÃO
+; -------------------------------------------------
 SUCCESS:
-    LDA #$01
-    STA $00FF       ; Status = 1 (Sucesso!)
-    JMP SUCCESS     ; Loop infinito
+    LDA #$AA               ; SUCESSO: A termina com AA
+    BRK
 
-; ========================================
-; FALHA
-; ========================================
 FAIL:
-    LDA #$FF        ; Marca erro
-    STA $00FF       ; Status = FF (Falha)
-    JMP FAIL        ; Loop infinito
+    LDA #$FF               ; ERRO: A termina com FF
+    BRK

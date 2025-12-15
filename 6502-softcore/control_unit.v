@@ -1,14 +1,14 @@
 `include "alu_defines.vh"
 
 module control_unit(
-    input  wire          clk,
-    input  wire          reset,
-    output wire [7:0]    A_out,
-    output wire [15:0]   PC_out,
-    output wire [7:0]    X_out,
-    output wire [7:0]    Y_out
+    input  wire        clk,
+    input  wire        reset,
+    output wire [7:0]  A_out,
+    output wire [15:0] PC_out,
+    output wire [7:0]  X_out,
+    output wire [7:0]  Y_out
 );
-   
+    
     // Addressing modes
     localparam IMPL = 4'd0;
     localparam IMM  = 4'd1; 
@@ -18,29 +18,28 @@ module control_unit(
     localparam ZPY  = 4'd5;
     localparam ABX  = 4'd6;
     localparam ABY  = 4'd7;
-    localparam INDX = 4'd8;
-    localparam INDY = 4'd9;
+    localparam INDX = 4'd8; // (ZP, X) - Indexed Indirect
+    localparam INDY = 4'd9; // (ZP), Y - Indirect Indexed
 
     // --- ESTADOS DA FSM ---
-    localparam FETCH         = 3'd0,
-               DECODE        = 3'd1,
-               READ          = 3'd2,
-               EXECUTE       = 3'd3,
-               WRITEBACK     = 3'd4;
+    localparam FETCH      = 3'd0,
+             DECODE       = 3'd1,
+             READ         = 3'd2,
+             EXECUTE      = 3'd3,
+             WRITEBACK    = 3'd4;
 
     // Sub-estágios gerais (SET_ADDR -> WAIT -> CAPTURE)
     localparam SUB_SET_ADDR = 2'd0,
                SUB_WAIT     = 2'd1,
                SUB_CAPTURE  = 2'd2;
 
-    // Sub-estágios para endereçamento indireto
-    // Cada leitura precisa: SET_ADDR -> WAIT -> CAPTURE (3 ciclos)
-    localparam SUB_IND_READ_LO   = 3'd0,  // Fase 1: Lê byte LOW do ponteiro
-               SUB_IND_READ_HI   = 3'd1,  // Fase 2: Lê byte HIGH do ponteiro  
-               SUB_IND_READ_DATA = 3'd2,  // Fase 3: Lê dado final do endereço
-               SUB_IND_COMPLETE  = 3'd3;  // Completo
+    // Sub-estágios para endereçamento indireto (3 fases de acesso à memória + 1 fase de conclusão)
+    localparam SUB_IND_READ_LO  = 3'd0,  // Fase 1: Lê byte LOW do ponteiro
+               SUB_IND_READ_HI  = 3'd1,  // Fase 2: Lê byte HIGH do ponteiro 
+               SUB_IND_READ_DATA = 3'd2, // Fase 3: Lê dado final do endereço (ENDEREÇO EFETIVO)
+               SUB_IND_COMPLETE  = 3'd3; // Completo
 
-    // Instruction types
+    // Instruction types (Omitidos por brevidade, mas devem estar no arquivo original)
     localparam I_LDA = 8'd0, I_STA = 8'd1, I_ADC = 8'd2, I_SBC = 8'd3,
                I_AND = 8'd4, I_JMP = 8'd5, I_INX = 8'd6, I_ORA = 8'd7,  
                I_XOR = 8'd8, I_INC = 8'd9, I_ASL = 8'd10, I_LSR = 8'd11,
@@ -52,7 +51,7 @@ module control_unit(
                I_SET_IRQ = 8'd31, I_CLR_IRQ = 8'd32, I_SET_CLD = 8'd33, 
                I_CLR_CLD = 8'd34, I_CLR_CLV = 8'd35;
 
-    // Register Destinations
+    // Register Destinations (Omitidos por brevidade, mas devem estar no arquivo original)
     localparam DEST_NONE = 3'd0;
     localparam DEST_A    = 3'd1;
     localparam DEST_X    = 3'd2;
@@ -67,14 +66,14 @@ module control_unit(
     reg [2:0] current_ind_sub, next_ind_sub;  // 3 bits para 4 estados do indireto
 
     // Sinais Internos
-    reg           we_a_sig, we_x_sig, we_y_sig, we_sp_sig, we_pc_sig, we_ps_sig;
-    reg  [7:0]    cpu_data_in;
-    wire [7:0]    A, X, Y, SP, PS;
-    wire [15:0]   PC;
-    reg  [15:0]   pc_in_reg;
-    reg  [7:0]    flags_in_sig;
+    reg      we_a_sig, we_x_sig, we_y_sig, we_sp_sig, we_pc_sig, we_ps_sig;
+    reg  [7:0]   cpu_data_in;
+    wire [7:0]   A, X, Y, SP, PS;
+    wire [15:0]  PC;
+    reg  [15:0]  pc_in_reg;
+    reg  [7:0]   flags_in_sig;
 
-    // Instância do banco de registradores
+    // Instância do banco de registradores (Assumindo que esta instância funciona)
     cpu_register cpu_register_inst (
         .clk(clk), .reset(reset),
         .we_a(we_a_sig), .we_x(we_x_sig), .we_y(we_y_sig),
@@ -83,7 +82,7 @@ module control_unit(
         .A(A), .X(X), .Y(Y), .SP(SP), .PC(PC), .PS(PS)
     );
     
-    // Interface com a RAM
+    // Interface com a RAM (Assumindo que esta instância funciona)
     reg  [15:0] ram_address;
     reg  [7:0]  ram_data_in;
     wire [7:0]  ram_data_out;
@@ -94,10 +93,10 @@ module control_unit(
         .rden(r_ram), .wren(w_ram), .q(ram_data_out)
     );
 
-    // Decoder
+    // Decoder (Assumindo que esta instância funciona)
     reg  [7:0] opcode;
     wire [4:0] alu_op_sig;
-    wire        use_alu_sig, mem_read_sig, mem_write_sig;
+    wire         use_alu_sig, mem_read_sig, mem_write_sig;
     wire [1:0] instr_size_sig;
     wire [3:0] addr_mode_sig;
     wire [7:0] instr_type_sig;
@@ -120,9 +119,9 @@ module control_unit(
     reg [7:0]  indirect_lo, indirect_hi;
     reg [15:0] effective_addr;
 
-    // ALU
+    // ALU (Assumindo que esta instância funciona)
     reg  [7:0] alu_reg1, alu_reg2;
-    reg        alu_cin;
+    reg         alu_cin;
     wire [7:0] alu_result;
     wire [3:0] alu_flags;
 
@@ -190,7 +189,6 @@ module control_unit(
                     temp_pc       <= temp_pc + 16'd1; 
                 end 
                 // CASO 2: Lendo para INDX/INDY (3 fases: LOW, HIGH, DATA)
-                // CORREÇÃO: Remoção de atribuições a next_ind_sub aqui (movido para lógica combinacional)
                 else if ((addr_mode_sig == INDX || addr_mode_sig == INDY)) begin
                     case (current_ind_sub)
                         SUB_IND_READ_LO: begin
@@ -198,11 +196,13 @@ module control_unit(
                             indirect_lo <= ram_data_out;
                         end
                         SUB_IND_READ_HI: begin
-                            // Captura byte HIGH do ponteiro e calcula endereço efetivo
+                            // Captura byte HIGH do ponteiro
                             indirect_hi <= ram_data_out;
+                            
+                            // *** CORREÇÃO 1: Adicionar a lógica do cálculo do effective_addr para INDY ***
                             if (addr_mode_sig == INDY)
                                 effective_addr <= {ram_data_out, indirect_lo} + {8'd0, Y};
-                            else
+                            else // INDX
                                 effective_addr <= {ram_data_out, indirect_lo};
                         end
                         SUB_IND_READ_DATA: begin
@@ -215,20 +215,22 @@ module control_unit(
                 end
                 // CASO 3: Lendo dado efetivo para outros modos
                 else if (mem_read_sig) begin
-                    operand_val   <= ram_data_out;
+                    operand_val    <= ram_data_out;
                     operand_count <= operand_count + 2'd1; 
                 end
             end
             
-            // WRITEBACK: Captura para endereçamento indireto durante escrita
+            // WRITEBACK: Captura para endereçamento indireto durante escrita (STA (ZP), Y)
             if (current_stage == WRITEBACK && mem_write_sig && 
                 (addr_mode_sig == INDX || addr_mode_sig == INDY) &&
                 current_sub == SUB_CAPTURE) begin
-                // CORREÇÃO: Remoção de atribuições a next_ind_sub aqui (movido para lógica combinacional)
+                
                 if (current_ind_sub == SUB_IND_READ_LO) begin
                     indirect_lo <= ram_data_out;
                 end else if (current_ind_sub == SUB_IND_READ_HI) begin
                     indirect_hi <= ram_data_out;
+                    
+                    // *** CORREÇÃO 1 (WRITEBACK): Adicionar a lógica do cálculo do effective_addr para INDY ***
                     if (addr_mode_sig == INDY)
                         effective_addr <= {ram_data_out, indirect_lo} + {8'd0, Y};
                     else
@@ -256,6 +258,8 @@ module control_unit(
         cpu_data_in  = 8'd0;
         pc_in_reg    = PC;
         flags_in_sig = PS;
+        
+        // ... (Seleção de alu_reg1, alu_reg2 e alu_cin - MANTIDAS)
         
         // --- Seleção de alu_reg1 ---
         if (instr_type_sig == I_INC) begin
@@ -308,7 +312,7 @@ module control_unit(
         next_ind_sub  = current_ind_sub;
 
         case (current_stage)
-            // --- FETCH ---
+            // --- FETCH --- (MANTIDO)
             FETCH: begin
                 case (current_sub)
                     SUB_SET_ADDR: begin 
@@ -329,7 +333,7 @@ module control_unit(
                 endcase
             end
 
-            // --- DECODE ---
+            // --- DECODE --- (MANTIDO)
             DECODE: begin
                 if (instr_size_sig == 2'd1) 
                     next_stage = EXECUTE;
@@ -372,13 +376,15 @@ module control_unit(
                                             if (addr_mode_sig == INDX) 
                                                 ram_address = {8'd0, (operand_lo + X)};
                                             else
-                                                ram_address = {8'd0, operand_lo};
+                                                // *** CORREÇÃO 2: INDY não indexa o endereço da ZP com Y! ***
+                                                ram_address = {8'd0, operand_lo}; 
                                         end
                                         
                                         SUB_IND_READ_HI: begin
                                             if (addr_mode_sig == INDX)
                                                 ram_address = {8'd0, (operand_lo + X + 8'd1)};
                                             else
+                                                // *** CORREÇÃO 2: INDY não indexa o endereço da ZP com Y! ***
                                                 ram_address = {8'd0, (operand_lo + 8'd1)};
                                         end
                                         
@@ -402,10 +408,10 @@ module control_unit(
                             // Se não for completo ou imediato/implícito, vai para wait
                             if (addr_mode_sig != IMPL && addr_mode_sig != IMM) begin
                                 if ((addr_mode_sig == INDX || addr_mode_sig == INDY) && 
-                                     current_ind_sub == SUB_IND_COMPLETE) begin
-                                     // Já tratado acima no case
+                                        current_ind_sub == SUB_IND_COMPLETE) begin
+                                    // Já tratado acima no case
                                 end else begin
-                                     next_sub = SUB_WAIT;
+                                    next_sub = SUB_WAIT;
                                 end
                             end
                         end
@@ -415,7 +421,7 @@ module control_unit(
                         end
                     end
 
-                    SUB_WAIT: begin
+                    SUB_WAIT: begin // (Lógica de endereço repetida no WAIT, MANTIDA)
                         r_ram = 1;
                         
                         if (operand_count < (instr_size_sig - 1)) begin
@@ -436,6 +442,7 @@ module control_unit(
                                             if (addr_mode_sig == INDX) 
                                                 ram_address = {8'd0, (operand_lo + X)};
                                             else
+                                                // *** CORREÇÃO 2: INDY não indexa o endereço da ZP com Y! ***
                                                 ram_address = {8'd0, operand_lo};
                                         end
                                         
@@ -443,6 +450,7 @@ module control_unit(
                                             if (addr_mode_sig == INDX)
                                                 ram_address = {8'd0, (operand_lo + X + 8'd1)};
                                             else
+                                                // *** CORREÇÃO 2: INDY não indexa o endereço da ZP com Y! ***
                                                 ram_address = {8'd0, (operand_lo + 8'd1)};
                                         end
                                         
@@ -476,12 +484,12 @@ module control_unit(
                             // Continua no modo indireto (precisa de mais ciclos)
                             next_sub = SUB_SET_ADDR;
 
-                            // CORREÇÃO: Lógica de transição next_ind_sub adicionada aqui
+                            // Lógica de transição next_ind_sub (MANTIDA)
                             case (current_ind_sub)
-                                SUB_IND_READ_LO:   next_ind_sub = SUB_IND_READ_HI;
-                                SUB_IND_READ_HI:   next_ind_sub = SUB_IND_READ_DATA;
+                                SUB_IND_READ_LO:    next_ind_sub = SUB_IND_READ_HI;
+                                SUB_IND_READ_HI:    next_ind_sub = SUB_IND_READ_DATA;
                                 SUB_IND_READ_DATA: next_ind_sub = SUB_IND_COMPLETE;
-                                default:           next_ind_sub = current_ind_sub;
+                                default:            next_ind_sub = current_ind_sub;
                             endcase
                         end
                         else if (mem_read_sig && operand_count == (instr_size_sig - 1)) begin
@@ -499,7 +507,7 @@ module control_unit(
                 endcase
             end
 
-            // --- EXECUTE ---
+            // --- EXECUTE --- (MANTIDO)
             EXECUTE: begin
                 next_stage = WRITEBACK;
             end
@@ -509,18 +517,13 @@ module control_unit(
                 next_stage = FETCH;
                 next_sub   = SUB_SET_ADDR;
                 
-                // Escrita em registradores
+                // ... (Escrita em registradores, flags, etc. - MANTIDA)
                 we_a_sig  = (reg_dest_sig == DEST_A)  && (!mem_write_sig);
                 we_x_sig  = (reg_dest_sig == DEST_X)  && (!mem_write_sig);
                 we_y_sig  = (reg_dest_sig == DEST_Y)  && (!mem_write_sig);
                 we_sp_sig = (reg_dest_sig == DEST_SP) && (!mem_write_sig);
-                
-                // Atualização de flags
-                we_ps_sig = (reg_dest_sig != DEST_NONE) && 
-                           (instr_type_sig != I_JMP) && 
-                           (!mem_write_sig);
+                we_ps_sig = (reg_dest_sig != DEST_NONE) && (instr_type_sig != I_JMP) && (!mem_write_sig);
 
-                // Seleção de flags
                 if (instr_type_sig == I_SET_CARRY) begin
                     flags_in_sig    = PS;
                     flags_in_sig[0] = 1'b1;
@@ -593,6 +596,7 @@ module control_unit(
                                 if (addr_mode_sig == INDX) 
                                     ram_address = {8'd0, (operand_lo + X)};
                                 else
+                                    // *** CORREÇÃO 2 (WRITEBACK): INDY não indexa o endereço da ZP com Y! ***
                                     ram_address = {8'd0, operand_lo};
                                 next_ind_sub = SUB_IND_READ_HI;
                                 next_stage   = WRITEBACK;
@@ -605,6 +609,7 @@ module control_unit(
                                 if (addr_mode_sig == INDX)
                                     ram_address = {8'd0, (operand_lo + X + 8'd1)};
                                 else
+                                    // *** CORREÇÃO 2 (WRITEBACK): INDY não indexa o endereço da ZP com Y! ***
                                     ram_address = {8'd0, (operand_lo + 8'd1)};
                                 next_ind_sub = SUB_IND_READ_DATA;
                                 next_stage   = WRITEBACK;
@@ -628,7 +633,7 @@ module control_unit(
                     end
                 end
 
-                // Dado de entrada para registradores
+                // Dado de entrada para registradores (MANTIDA)
                 if (reg_dest_sig == DEST_A || reg_dest_sig == DEST_X || 
                     reg_dest_sig == DEST_Y || reg_dest_sig == DEST_SP) begin
                     if (instr_type_sig == I_LDA) begin
@@ -638,7 +643,7 @@ module control_unit(
                     end
                 end
 
-                // Atualização do PC
+                // Atualização do PC (MANTIDA)
                 we_pc_sig = 1'b1;
                 
                 if (instr_type_sig == I_JMP) 

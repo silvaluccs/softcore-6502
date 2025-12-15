@@ -341,6 +341,41 @@ module decoder (
 					 use_alu    = 1; alu_op     = `ALU_OP_ADD; reg_dest  = DEST_A;
 				end
 
+        8'h65: begin // ADC ZP
+           instr_type = I_ADC; addr_mode  = ZP; instr_size = 2; mem_read   = 1;
+           use_alu    = 1; alu_op     = `ALU_OP_ADD; reg_dest  = DEST_A;
+        end
+
+        8'h75: begin // ADC ZPX
+           instr_type = I_ADC; addr_mode  = ZPX; instr_size = 2; mem_read   = 1;
+           use_alu    = 1; alu_op     = `ALU_OP_ADD; reg_dest  = DEST_A;
+        end
+
+        8'h6D: begin // ADC ABS
+           instr_type = I_ADC; addr_mode  = ABS; instr_size = 3; mem_read   = 1;
+           use_alu    = 1; alu_op     = `ALU_OP_ADD; reg_dest  = DEST_A;
+        end
+
+        8'h7D: begin // ADC ABX
+           instr_type = I_ADC; addr_mode  = ABX; instr_size = 3; mem_read   = 1;
+           use_alu    = 1; alu_op     = `ALU_OP_ADD; reg_dest  = DEST_A;
+        end
+
+        8'h79: begin // ADC ABY
+           instr_type = I_ADC; addr_mode  = ABY; instr_size = 3; mem_read   = 1;
+           use_alu    = 1; alu_op     = `ALU_OP_ADD; reg_dest  = DEST_A;
+        end
+
+        8'h61: begin // ADC (INDX)
+           instr_type = I_ADC; addr_mode  = INDX; instr_size = 2; mem_read   = 1;
+           use_alu    = 1; alu_op     = `ALU_OP_ADD; reg_dest  = DEST_A;
+        end
+
+        8'h71: begin // ADC (INDY)
+           instr_type = I_ADC; addr_mode  = INDY; instr_size = 2; mem_read   = 1;
+           use_alu    = 1; alu_op     = `ALU_OP_ADD; reg_dest  = DEST_A;
+        end
+
         // NOP 
         8'hEA: begin
            instr_type = I_LDA; addr_mode  = IMPL; instr_size = 1;
