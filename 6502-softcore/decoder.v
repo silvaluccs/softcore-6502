@@ -388,10 +388,47 @@ module decoder (
 					 instr_type = I_SBC; addr_mode  = IMM; instr_size = 2;
 					 use_alu    = 1; alu_op     = `ALU_OP_SUB; reg_dest  = DEST_A;
 				end
+
 				8'h29: begin // AND Imm
 					 instr_type = I_AND; addr_mode  = IMM; instr_size = 2;
 					 use_alu    = 1; alu_op     = `ALU_OP_AND; reg_dest  = DEST_A;
 				end
+
+        8'h25: begin // AND ZP
+           instr_type = I_AND; addr_mode  = ZP; instr_size = 2; mem_read   = 1;
+           use_alu    = 1; alu_op     = `ALU_OP_AND; reg_dest  = DEST_A;
+        end'
+
+        8'h35: begin // AND ZPX
+           instr_type = I_AND; addr_mode  = ZPX; instr_size = 2; mem_read   = 1;
+           use_alu    = 1; alu_op     = `ALU_OP_AND; reg_dest  = DEST_A;
+        end
+
+        8'h2D: begin // AND ABS
+           instr_type = I_AND; addr_mode  = ABS; instr_size = 3; mem_read   = 1;
+           use_alu    = 1; alu_op     = `ALU_OP_AND; reg_dest  = DEST_A;
+        end
+
+        8'h3D: begin // AND ABX
+           instr_type = I_AND; addr_mode  = ABX; instr_size = 3; mem_read   = 1;
+           use_alu    = 1; alu_op     = `ALU_OP_AND; reg_dest  = DEST_A;
+        end
+
+        8'h39: begin // AND ABY
+           instr_type = I_AND; addr_mode  = ABY; instr_size = 3; mem_read   = 1;
+           use_alu    = 1; alu_op     = `ALU_OP_AND; reg_dest  = DEST_A;
+        end
+
+        8'h21: begin // AND (INDX)
+           instr_type = I_AND; addr_mode  = INDX; instr_size = 2; mem_read   = 1;
+           use_alu    = 1; alu_op     = `ALU_OP_AND; reg_dest  = DEST_A;
+        end
+
+        8'h31: begin // AND (INDY)
+           instr_type = I_AND; addr_mode  = INDY; instr_size = 2; mem_read   = 1;
+           use_alu    = 1; alu_op     = `ALU_OP_AND; reg_dest  = DEST_A;
+        end
+
 				8'h49: begin // XOR Imm
 					 instr_type = I_XOR; addr_mode  = IMM; instr_size = 2;
 					 use_alu    = 1; alu_op     = `ALU_OP_XOR; reg_dest  = DEST_A;
