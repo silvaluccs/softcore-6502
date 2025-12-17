@@ -316,6 +316,36 @@ module decoder (
             use_alu    = 1; alu_op     = `ALU_OP_SUB; reg_dest  = DEST_PS;
         end
 
+        8'hD5: begin // CMP ZPX
+            instr_type = I_CMP; addr_mode  = ZPX; instr_size = 2; mem_read   = 1;
+            use_alu    = 1; alu_op     = `ALU_OP_SUB; reg_dest  = DEST_PS;
+        end
+
+        8'hCD: begin // CMP ABS
+            instr_type = I_CMP; addr_mode  = ABS; instr_size = 3; mem_read   = 1;
+            use_alu    = 1; alu_op     = `ALU_OP_SUB; reg_dest  = DEST_PS;
+        end
+
+        8'hDD: begin // CMP ABX
+            instr_type = I_CMP; addr_mode  = ABX; instr_size = 3; mem_read   = 1;
+            use_alu    = 1; alu_op     = `ALU_OP_SUB; reg_dest  = DEST_PS;
+        end
+
+        8'hD9: begin // CMP ABY
+            instr_type = I_CMP; addr_mode  = ABY; instr_size = 3; mem_read   = 1;
+            use_alu    = 1; alu_op     = `ALU_OP_SUB; reg_dest  = DEST_PS;
+        end
+
+        8'hC1: begin // CMP (INDX)
+            instr_type = I_CMP; addr_mode  = INDX; instr_size = 2; mem_read   = 1;
+            use_alu    = 1; alu_op     = `ALU_OP_SUB; reg_dest  = DEST_PS;
+        end
+
+        8'hD1: begin // CMP (INDY)
+            instr_type = I_CMP; addr_mode  = INDY; instr_size = 2; mem_read   = 1;
+            use_alu    = 1; alu_op     = `ALU_OP_SUB; reg_dest  = DEST_PS;
+        end
+
         // -------- CPX --------
         8'hE0: begin // CPX Imm
            instr_type = I_CPX; addr_mode  = IMM; instr_size = 2;
@@ -327,6 +357,11 @@ module decoder (
             use_alu    = 1; alu_op     = `ALU_OP_SUB; reg_dest  = DEST_PS;
         end
 
+        8'hEC: begin // CPX ABS
+            instr_type = I_CPX; addr_mode  = ABS; instr_size = 3; mem_read   = 1;
+            use_alu    = 1; alu_op     = `ALU_OP_SUB; reg_dest  = DEST_PS;
+        end
+
         // -------- CPY --------
         8'hC0: begin // CPY Imm
            instr_type = I_CPY; addr_mode  = IMM; instr_size = 2;
@@ -335,6 +370,11 @@ module decoder (
 
         8'hC4: begin // CPY ZP
             instr_type = I_CPY; addr_mode  = ZP; instr_size = 2; mem_read   = 1;
+            use_alu    = 1; alu_op     = `ALU_OP_SUB; reg_dest  = DEST_PS;
+        end
+
+        8'hCC: begin // CPY ABS
+            instr_type = I_CPY; addr_mode  = ABS; instr_size = 3; mem_read   = 1;
             use_alu    = 1; alu_op     = `ALU_OP_SUB; reg_dest  = DEST_PS;
         end
 
@@ -516,11 +556,49 @@ module decoder (
 					 mem_read   = 1; mem_write  = 1; use_alu    = 1;
 					 alu_op     = `ALU_OP_INC; reg_dest  = DEST_MEM; // Salva na Memória
 				end
+
+        8'hF6: begin // INC ZPX
+           instr_type = I_INC; addr_mode  = ZPX; instr_size = 2;
+           mem_read   = 1; mem_write  = 1; use_alu    = 1;
+           alu_op     = `ALU_OP_INC; reg_dest  = DEST_MEM; // Salva na Memória
+        end
+
+        8'hEE: begin // INC ABS
+           instr_type = I_INC; addr_mode  = ABS; instr_size = 3;
+           mem_read   = 1; mem_write  = 1; use_alu    = 1;
+           alu_op     = `ALU_OP_INC; reg_dest  = DEST_MEM; // Salva na Memória
+        end
+
+        8'hFE: begin // INC ABX
+           instr_type = I_INC; addr_mode  = ABX; instr_size = 3;
+           mem_read   = 1; mem_write  = 1; use_alu    = 1;
+           alu_op     = `ALU_OP_INC; reg_dest  = DEST_MEM; // Salva na Memória
+        end
+
+
 				8'hC6: begin // DEC ZP
 					 instr_type = I_INC; addr_mode  = ZP; instr_size = 2; 
 					 mem_read   = 1; mem_write  = 1; use_alu    = 1;
 					 alu_op     = `ALU_OP_DEC; reg_dest  = DEST_MEM; // Salva na Memória
 				end
+
+        8'hD6: begin // DEC ZPX
+           instr_type = I_INC; addr_mode  = ZPX; instr_size = 2; 
+           mem_read   = 1; mem_write  = 1; use_alu    = 1;
+           alu_op     = `ALU_OP_DEC; reg_dest  = DEST_MEM; // Salva na Memória
+        end
+
+        8'hCE: begin // DEC ABS
+           instr_type = I_INC; addr_mode  = ABS; instr_size = 3; 
+           mem_read   = 1; mem_write  = 1; use_alu    = 1;
+           alu_op     = `ALU_OP_DEC; reg_dest  = DEST_MEM; // Salva na Memória
+        end
+
+        8'hDE: begin // DEC ABX
+           instr_type = I_INC; addr_mode  = ABX; instr_size = 3; 
+           mem_read   = 1; mem_write  = 1; use_alu    = 1;
+           alu_op     = `ALU_OP_DEC; reg_dest  = DEST_MEM; // Salva na Memória
+        end
 
 				// -------- JMP --------
 				8'h4C: begin
