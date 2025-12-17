@@ -109,18 +109,8 @@ module decoder (
 					 use_alu    = 1;
 					 alu_op     = `ALU_OP_ROL;
 				end
-				8'h4A: begin // LSR A
-					 instr_type = I_LSR; 
-					 reg_dest   = DEST_A; // Salva em A
-					 use_alu    = 1;
-					 alu_op     = `ALU_OP_LSR;
-				end
-				8'h0A: begin // ASL A
-					 instr_type = I_ASL;
-					 reg_dest   = DEST_A; // Salva em A
-					 use_alu    = 1;
-					 alu_op     = `ALU_OP_ASL;
-				end
+
+
 
 				// -------- LDA --------
 				8'hA9: begin // immediate
@@ -389,6 +379,67 @@ module decoder (
 					 use_alu    = 1; alu_op     = `ALU_OP_SUB; reg_dest  = DEST_A;
 				end
 
+				8'h0A: begin // ASL A
+          instr_type = I_ASL; addr_mode  = IMPL; instr_size = 1;
+          use_alu    = 1; alu_op     = `ALU_OP_ASL; reg_dest  = DEST_A;
+          mem_read  = 0; mem_write  = 0;
+        end
+
+        8'h06: begin // ASL ZP
+          instr_type = I_ASL; addr_mode  = ZP; instr_size = 2;
+          use_alu    = 1; alu_op     = `ALU_OP_ASL; reg_dest  = DEST_MEM;
+          mem_read   = 1; mem_write  = 1;
+        end
+
+        8'h16: begin // ASL ZPX
+          instr_type = I_ASL; addr_mode  = ZPX; instr_size = 2;
+          use_alu    = 1; alu_op     = `ALU_OP_ASL; reg_dest  = DEST_MEM;
+          mem_read   = 1; mem_write  = 1;
+        end
+
+        8'h0E: begin // ASL ABS
+          instr_type = I_ASL; addr_mode  = ABS; instr_size = 3;
+          use_alu    = 1; alu_op     = `ALU_OP_ASL; reg_dest  = DEST_MEM;
+          mem_read   = 1; mem_write  = 1;
+        end
+
+        8'h1E: begin // ASL ABX
+          instr_type = I_ASL; addr_mode  = ABX; instr_size = 3;
+          use_alu    = 1; alu_op     = `ALU_OP_ASL; reg_dest  = DEST_MEM;
+          mem_read   = 1; mem_write  = 1;
+        end
+
+				8'h4A: begin // LSR A
+          instr_type = I_LSR; addr_mode  = IMPL; instr_size = 1;
+          use_alu    = 1; alu_op     = `ALU_OP_LSR; reg_dest  = DEST_A;
+          mem_read  = 0; mem_write  = 0;
+				end
+
+        8'h46: begin // LSR ZP
+          instr_type = I_LSR; addr_mode  = ZP; instr_size = 2;
+          use_alu    = 1; alu_op     = `ALU_OP_LSR; reg_dest  = DEST_MEM;
+          mem_read   = 1; mem_write  = 1;
+        end
+
+        8'h56: begin // LSR ZPX
+          instr_type = I_LSR; addr_mode  = ZPX; instr_size = 2;
+          use_alu    = 1; alu_op     = `ALU_OP_LSR; reg_dest  = DEST_MEM;
+          mem_read   = 1; mem_write  = 1;
+        end
+
+        8'h4E: begin // LSR ABS
+          instr_type = I_LSR; addr_mode  = ABS; instr_size = 3;
+          use_alu    = 1; alu_op     = `ALU_OP_LSR; reg_dest  = DEST_MEM;
+          mem_read   = 1; mem_write  = 1;
+        end
+
+        8'h5E: begin // LSR ABX
+          instr_type = I_LSR; addr_mode  = ABX; instr_size = 3;
+          use_alu    = 1; alu_op     = `ALU_OP_LSR; reg_dest  = DEST_MEM;
+          mem_read   = 1; mem_write  = 1;
+        end
+
+
 				8'h29: begin // AND Imm
 					 instr_type = I_AND; addr_mode  = IMM; instr_size = 2;
 					 use_alu    = 1; alu_op     = `ALU_OP_AND; reg_dest  = DEST_A;
@@ -397,7 +448,7 @@ module decoder (
         8'h25: begin // AND ZP
            instr_type = I_AND; addr_mode  = ZP; instr_size = 2; mem_read   = 1;
            use_alu    = 1; alu_op     = `ALU_OP_AND; reg_dest  = DEST_A;
-        end'
+        end
 
         8'h35: begin // AND ZPX
            instr_type = I_AND; addr_mode  = ZPX; instr_size = 2; mem_read   = 1;
