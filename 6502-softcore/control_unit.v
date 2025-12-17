@@ -49,7 +49,7 @@ module control_unit(
                I_TY = 8'd24, I_TS = 8'd25, I_CMP = 8'd26, I_CPX = 8'd27, 
                I_CPY = 8'd28, I_SET_CARRY = 8'd29, I_CLR_CARRY = 8'd30,
                I_SET_IRQ = 8'd31, I_CLR_IRQ = 8'd32, I_SET_CLD = 8'd33, 
-               I_CLR_CLD = 8'd34, I_CLR_CLV = 8'd35;
+               I_CLR_CLD = 8'd34, I_CLR_CLV = 8'd35, I_BIT = 8'd36;
 
     // Register Destinations (Omitidos por brevidade, mas devem estar no arquivo original)
     localparam DEST_NONE = 3'd0;
@@ -545,6 +545,12 @@ module control_unit(
                 end else if (instr_type_sig == I_CLR_CLV) begin
                     flags_in_sig    = PS;
                     flags_in_sig[6] = 1'b0;
+                end else if (instr_type_sig == I_BIT) begin
+
+                    flags_in_sig[1] = alu_flags[1]; // Z
+                    flags_in_sig[7] = operand_val[7]; // N
+                    flags_in_sig[6] = operand_val[6]; // V
+                  
                 end else if (use_alu_sig) begin
                     flags_in_sig[0] = alu_flags[0];
                     flags_in_sig[1] = alu_flags[1];

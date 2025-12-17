@@ -33,7 +33,8 @@ module decoder (
 				  I_BCS = 8'd16, I_BCC=8'd17, I_BMI = 8'd18, I_BPL=8'd19, I_BVC=8'd20,
 				  I_BVS=8'd21, I_TA=8'd22, I_TX=8'd23, I_TY=8'd24, I_TS=8'd25,
           I_CMP=8'd26, I_CPX=8'd27, I_CPY=8'd28, I_SET_CARRY=8'd29, I_CLR_CARRY=8'd30,
-          I_SET_IRQ=8'd31, I_CLR_IRQ=8'd32, I_SET_CLD=8'd33, I_CLR_CLD=8'd34, I_CLR_CLV=8'd35;
+          I_SET_IRQ=8'd31, I_CLR_IRQ=8'd32, I_SET_CLD=8'd33, I_CLR_CLD=8'd34, I_CLR_CLV=8'd35,
+          I_BIT=8'd36;
 
 	 // Register Destinations (reg_dest)
 	 localparam DEST_NONE = 3'd0; // Nenhuma escrita em Registrador (Ex: STA, JMP)
@@ -58,6 +59,18 @@ module decoder (
 		  reg_dest   = DEST_NONE; // Novo default
 
 		  case (opcode)
+
+        8'h24: begin // BIT ZP
+           instr_type = I_BIT; addr_mode  = ZP; instr_size = 2;
+           mem_read   = 1; use_alu    = 1; 
+           alu_op     = `ALU_OP_AND; reg_dest  = DEST_PS;
+        end
+
+        8'h2C: begin // BIT ABS
+           instr_type = I_BIT; addr_mode  = ABS; instr_size = 3;
+           mem_read   = 1; use_alu    = 1; 
+           alu_op     = `ALU_OP_AND; reg_dest  = DEST_PS;
+        end
 
         8'hB8: begin // CLV
            instr_type = I_CLR_CLV; addr_mode  = IMPL; instr_size = 1;
