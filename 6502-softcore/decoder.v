@@ -117,12 +117,61 @@ module decoder (
 					 use_alu    = 1;
 					 alu_op     = `ALU_OP_ROR;
 				end
+
+        8'h66: begin // ROR ZP
+            instr_type = I_ROR; addr_mode  = ZP; instr_size = 2;
+            mem_read   = 1; mem_write  = 1; use_alu    = 1;
+            alu_op     = `ALU_OP_ROR; reg_dest  = DEST_MEM; // Salva na Memória
+        end
+
+        8'h76: begin // ROR ZPX
+            instr_type = I_ROR; addr_mode  = ZPX; instr_size = 2;
+            mem_read   = 1; mem_write  = 1; use_alu    = 1;
+            alu_op     = `ALU_OP_ROR; reg_dest  = DEST_MEM; // Salva na Memória
+        end
+
+        8'h6E: begin // ROR ABS
+            instr_type = I_ROR; addr_mode  = ABS; instr_size = 3;
+            mem_read   = 1; mem_write  = 1; use_alu    = 1;
+            alu_op     = `ALU_OP_ROR; reg_dest  = DEST_MEM; // Salva na Memória
+        end
+
+        8'h7E: begin // ROR ABX
+            instr_type = I_ROR; addr_mode  = ABX; instr_size = 3;
+            mem_read   = 1; mem_write  = 1; use_alu    = 1;
+            alu_op     = `ALU_OP_ROR; reg_dest  = DEST_MEM; // Salva na Memória
+        end
+
 				8'h2A: begin // ROL A
 					 instr_type = I_ROL; 
 					 reg_dest   = DEST_A; // Salva em A
 					 use_alu    = 1;
 					 alu_op     = `ALU_OP_ROL;
 				end
+
+        8'h26: begin // ROL ZP
+            instr_type = I_ROL; addr_mode  = ZP; instr_size = 2;
+            mem_read   = 1; mem_write  = 1; use_alu    = 1;
+            alu_op     = `ALU_OP_ROL; reg_dest  = DEST_MEM; // Salva na Memória
+        end
+
+        8'h36: begin // ROL ZPX
+            instr_type = I_ROL; addr_mode  = ZPX; instr_size = 2;
+            mem_read   = 1; mem_write  = 1; use_alu    = 1;
+            alu_op     = `ALU_OP_ROL; reg_dest  = DEST_MEM; // Salva na Memória
+        end
+
+        8'h2E: begin // ROL ABS
+            instr_type = I_ROL; addr_mode  = ABS; instr_size = 3;
+            mem_read   = 1; mem_write  = 1; use_alu    = 1;
+            alu_op     = `ALU_OP_ROL; reg_dest  = DEST_MEM; // Salva na Memória
+        end
+
+        8'h3E: begin // ROL ABX
+            instr_type = I_ROL; addr_mode  = ABX; instr_size = 3;
+            mem_read   = 1; mem_write  = 1; use_alu    = 1;
+            alu_op     = `ALU_OP_ROL; reg_dest  = DEST_MEM; // Salva na Memória
+        end
 
 
 
@@ -434,6 +483,41 @@ module decoder (
 					 use_alu    = 1; alu_op     = `ALU_OP_SUB; reg_dest  = DEST_A;
 				end
 
+        8'hE5: begin // SBC ZP
+           instr_type = I_SBC; addr_mode  = ZP; instr_size = 2; mem_read   = 1;
+           use_alu    = 1; alu_op     = `ALU_OP_SUB; reg_dest  = DEST_A;
+        end
+        
+        8'hF5: begin // SBC ZPX
+           instr_type = I_SBC; addr_mode  = ZPX; instr_size = 2; mem_read   = 1;
+           use_alu    = 1; alu_op     = `ALU_OP_SUB; reg_dest  = DEST_A;
+        end
+
+        8'hED: begin // SBC ABS
+           instr_type = I_SBC; addr_mode  = ABS; instr_size = 3; mem_read   = 1;
+           use_alu    = 1; alu_op     = `ALU_OP_SUB; reg_dest  = DEST_A;
+        end
+
+        8'hFD: begin // SBC ABX
+           instr_type = I_SBC; addr_mode  = ABX; instr_size = 3; mem_read   = 1;
+           use_alu    = 1; alu_op     = `ALU_OP_SUB; reg_dest  = DEST_A;
+        end
+
+        8'hF9: begin // SBC ABY
+           instr_type = I_SBC; addr_mode  = ABY; instr_size = 3; mem_read   = 1;
+           use_alu    = 1; alu_op     = `ALU_OP_SUB; reg_dest  = DEST_A;
+        end
+
+        8'hE1: begin // SBC (INDX)
+           instr_type = I_SBC; addr_mode  = INDX; instr_size = 2; mem_read   = 1;
+           use_alu    = 1; alu_op     = `ALU_OP_SUB; reg_dest  = DEST_A;
+        end
+
+        8'hF1: begin // SBC (INDY)
+           instr_type = I_SBC; addr_mode  = INDY; instr_size = 2; mem_read   = 1;
+           use_alu    = 1; alu_op     = `ALU_OP_SUB; reg_dest  = DEST_A;
+        end
+
 				8'h0A: begin // ASL A
           instr_type = I_ASL; addr_mode  = IMPL; instr_size = 1;
           use_alu    = 1; alu_op     = `ALU_OP_ASL; reg_dest  = DEST_A;
@@ -583,6 +667,36 @@ module decoder (
 					 instr_type = I_ORA; addr_mode  = ZP; instr_size = 2; mem_read   = 1;
 					 use_alu    = 1; alu_op     = `ALU_OP_OR; reg_dest  = DEST_A;
 				end
+
+        8'h15: begin // ORA ZPX
+           instr_type = I_ORA; addr_mode  = ZPX; instr_size = 2; mem_read   = 1;
+           use_alu    = 1; alu_op     = `ALU_OP_OR; reg_dest  = DEST_A;
+        end
+
+        8'h0D: begin // ORA ABS
+           instr_type = I_ORA; addr_mode  = ABS; instr_size = 3; mem_read   = 1;
+           use_alu    = 1; alu_op     = `ALU_OP_OR; reg_dest  = DEST_A;
+        end
+
+        8'h1D: begin // ORA ABX
+           instr_type = I_ORA; addr_mode  = ABX; instr_size = 3; mem_read   = 1;
+           use_alu    = 1; alu_op     = `ALU_OP_OR; reg_dest  = DEST_A;
+        end
+
+        8'h19: begin // ORA ABY
+           instr_type = I_ORA; addr_mode  = ABY; instr_size = 3; mem_read   = 1;
+           use_alu    = 1; alu_op     = `ALU_OP_OR; reg_dest  = DEST_A;
+        end
+
+        8'h01: begin // ORA (INDX)
+           instr_type = I_ORA; addr_mode  = INDX; instr_size = 2; mem_read   = 1;
+           use_alu    = 1; alu_op     = `ALU_OP_OR; reg_dest  = DEST_A;
+        end
+
+        8'h11: begin // ORA (INDY)
+           instr_type = I_ORA; addr_mode  = INDY; instr_size = 2; mem_read   = 1;
+           use_alu    = 1; alu_op     = `ALU_OP_OR; reg_dest  = DEST_A;
+        end
 
 				// -------- INC / DEC (Salva na Memória) --------
 				8'hE6: begin // INC ZP
