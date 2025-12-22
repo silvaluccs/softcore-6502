@@ -20,6 +20,7 @@ module control_unit(
     localparam ABY  = 4'd7;
     localparam INDX = 4'd8; // (ZP, X) - Indexed Indirect
     localparam INDY = 4'd9; // (ZP), Y - Indirect Indexed
+    localparam IND = 4'd10;
 
     // --- ESTADOS DA FSM ---
     localparam FETCH      = 3'd0,
@@ -189,7 +190,7 @@ module control_unit(
                     temp_pc       <= temp_pc + 16'd1; 
                 end 
                 // CASO 2: Lendo para INDX/INDY (3 fases: LOW, HIGH, DATA)
-                else if ((addr_mode_sig == INDX || addr_mode_sig == INDY)) begin
+                else if ((addr_mode_sig == INDX || addr_mode_sig == INDY || addr_mode_sig == IND)) begin
                     case (current_ind_sub)
                         SUB_IND_READ_LO: begin
                             // Captura byte LOW do ponteiro
@@ -222,7 +223,7 @@ module control_unit(
             
             // WRITEBACK: Captura para endereçamento indireto durante escrita (STA (ZP), Y)
             if (current_stage == WRITEBACK && mem_write_sig && 
-                (addr_mode_sig == INDX || addr_mode_sig == INDY) &&
+                (addr_mode_sig == INDX || addr_mode_sig == INDY || addr_mode_sig == IND) &&
                 current_sub == SUB_CAPTURE) begin
                 
                 if (current_ind_sub == SUB_IND_READ_LO) begin
@@ -370,7 +371,7 @@ module control_unit(
                                 ABX: ram_address = {operand_hi, operand_lo} + {8'd0, X};
                                 ABY: ram_address = {operand_hi, operand_lo} + {8'd0, Y};
 
-                                INDX, INDY: begin
+                                INDX, INDY, IND: begin
                                     case (current_ind_sub)
                                         SUB_IND_READ_LO: begin
                                             if (addr_mode_sig == INDX) 
@@ -407,7 +408,7 @@ module control_unit(
                             
                             // Se não for completo ou imediato/implícito, vai para wait
                             if (addr_mode_sig != IMPL && addr_mode_sig != IMM) begin
-                                if ((addr_mode_sig == INDX || addr_mode_sig == INDY) && 
+                                if ((addr_mode_sig == INDX || addr_mode_sig == INDY || addr_mode_sig == IND) && 
                                         current_ind_sub == SUB_IND_COMPLETE) begin
                                     // Já tratado acima no case
                                 end else begin
@@ -436,7 +437,7 @@ module control_unit(
                                 ABX: ram_address = {operand_hi, operand_lo} + {8'd0, X};
                                 ABY: ram_address = {operand_hi, operand_lo} + {8'd0, Y};
 
-                                INDX, INDY: begin
+                                INDX, INDY, IND: begin
                                     case (current_ind_sub)
                                         SUB_IND_READ_LO: begin
                                             if (addr_mode_sig == INDX) 
@@ -479,7 +480,7 @@ module control_unit(
                             next_sub = SUB_SET_ADDR;
                         end 
                         else if (mem_read_sig && 
-                                 (addr_mode_sig == INDX || addr_mode_sig == INDY) &&
+                                 (addr_mode_sig == INDX || addr_mode_sig == INDY || addr_mode_sig == IND) &&
                                  current_ind_sub != SUB_IND_COMPLETE) begin
                             // Continua no modo indireto (precisa de mais ciclos)
                             next_sub = SUB_SET_ADDR;
@@ -581,7 +582,7 @@ module control_unit(
                     end
                     
                     // Endereço e controle
-                    if (addr_mode_sig != INDX && addr_mode_sig != INDY) begin
+                    if (addr_mode_sig != INDX && addr_mode_sig != INDY && addr_mode_sig != IND) begin
                         w_ram = 1;
                         case (addr_mode_sig)
                             ZP:  ram_address = {8'd0, operand_lo};
@@ -652,8 +653,10 @@ module control_unit(
                 // Atualização do PC (MANTIDA)
                 we_pc_sig = 1'b1;
                 
-                if (instr_type_sig == I_JMP) 
+                if (instr_type_sig == I_JMP && addr_mode_sig == ABS) 
                     pc_in_reg = {operand_hi, operand_lo};
+                else if (instr_type_sig == I_JMP && addr_mode_sig == IND) 
+                    pc_in_reg = {indirect_hi, indirect_lo};
                 else if (instr_type_sig == I_BEQ && PS[1]) 
                     pc_in_reg = PC + offset16;
                 else if (instr_type_sig == I_BNE && !PS[1]) 

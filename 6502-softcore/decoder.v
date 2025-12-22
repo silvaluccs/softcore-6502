@@ -24,6 +24,7 @@ module decoder (
     localparam ABY  = 4'd7;
     localparam INDX = 4'd8;
     localparam INDY = 4'd9;	 // Instruction types
+    localparam IND = 4'd10;
 
 	// Instruction types (8 bits de largura)
 	localparam I_LDA = 8'd0, I_STA = 8'd1, I_ADC = 8'd2, I_SBC = 8'd3,
@@ -265,6 +266,7 @@ module decoder (
         8'h81: begin // (indirect,X)
            instr_type = I_STA; addr_mode  = INDX; instr_size = 2;
            mem_write  = 1; reg_dest   = DEST_A; // Não salva em registrador
+
         end
 
         8'h91: begin // (indirect),Y
@@ -541,6 +543,38 @@ module decoder (
 					 instr_type = I_XOR; addr_mode  = ZP; instr_size = 2; mem_read   = 1;
 					 use_alu    = 1; alu_op     = `ALU_OP_XOR; reg_dest  = DEST_A;
 				end
+
+        8'h55: begin // XOR ZPX
+           instr_type = I_XOR; addr_mode  = ZPX; instr_size = 2; mem_read   = 1;
+           use_alu    = 1; alu_op     = `ALU_OP_XOR; reg_dest  = DEST_A;
+        end
+
+        8'h4D: begin // XOR ABS
+           instr_type = I_XOR; addr_mode  = ABS; instr_size = 3; mem_read   = 1;
+           use_alu    = 1; alu_op     = `ALU_OP_XOR; reg_dest  = DEST_A;
+        end
+
+        8'h5D: begin // XOR ABX
+           instr_type = I_XOR; addr_mode  = ABX; instr_size = 3; mem_read   = 1;
+           use_alu    = 1; alu_op     = `ALU_OP_XOR; reg_dest  = DEST_A;
+        end
+
+        8'h59: begin // XOR ABY
+           instr_type = I_XOR; addr_mode  = ABY; instr_size = 3; mem_read   = 1;
+           use_alu    = 1; alu_op     = `ALU_OP_XOR; reg_dest  = DEST_A;
+        end
+
+        8'h41: begin // XOR (INDX)
+           instr_type = I_XOR; addr_mode  = INDX; instr_size = 2; mem_read   = 1;
+           use_alu    = 1; alu_op     = `ALU_OP_XOR; reg_dest  = DEST_A;
+        end
+
+        8'h51: begin // XOR (INDY)
+           instr_type = I_XOR; addr_mode  = INDY; instr_size = 2; mem_read   = 1;
+           use_alu    = 1; alu_op     = `ALU_OP_XOR; reg_dest  = DEST_A;
+        end
+
+
 				8'h09: begin // ORA Imm
 					 instr_type = I_ORA; addr_mode  = IMM; instr_size = 2;
 					 use_alu    = 1; alu_op     = `ALU_OP_OR; reg_dest  = DEST_A;
@@ -603,8 +637,13 @@ module decoder (
 				// -------- JMP --------
 				8'h4C: begin
 					 instr_type = I_JMP; addr_mode  = ABS; instr_size = 3;
-					 reg_dest   = DEST_NONE;
+					 reg_dest   = DEST_NONE; use_alu  = 0; 
 				end
+
+        8'h6C: begin // Indirect JMP
+           instr_type = I_JMP; addr_mode  = IND; instr_size = 3;
+           reg_dest   = DEST_NONE; mem_read  = 1; use_alu   = 0;
+        end
 				
 				// -------- BEQ --------
 				8'hF0: begin
