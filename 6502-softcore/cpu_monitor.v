@@ -12,6 +12,7 @@ module cpu_monitor(
     input  wire [7:0]   X_reg,     // <--- NOVO: Valor do Registrador X
     input  wire [7:0]   Y_reg,     // <--- NOVO: Valor do Registrador Y
     input  wire [15:0]  PC_reg,    // Valor do Program Counter (PC)
+    input  wire [7:0]   SP_reg,    // Valor do Stack Pointer (SP)
     
     // Entradas de Botões (Ativos em Nível Baixo/Zero)
     input  wire [3:0]   btn_n,     // Botoes: btn_n[0], btn_n[1], btn_n[2], btn_n[3]
@@ -37,7 +38,8 @@ module cpu_monitor(
 
         if (btn_n[0] == 1'b0) begin
             // Botão 0: Mostrar PC (16 bits) -> PC, A, X, Y
-            display_value = {8'h00, Y_reg};
+
+            display_value = {8'h00, SP_reg};
         end else if (btn_n[1] == 1'b0) begin
             // Botão 1: Mostrar A (8 bits)
             display_value = {8'h00, A_reg};
@@ -45,7 +47,8 @@ module cpu_monitor(
             // Botão 2: Mostrar X (8 bits)
             display_value = {8'h00, X_reg};
         end else begin
-				display_value = PC_reg; 
+
+				  display_value = PC_reg; 
 		  end
     end
     // ----------------------------------------------------------------

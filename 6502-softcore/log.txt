@@ -1,0 +1,72 @@
+Info: *******************************************************************
+Info: Running Quartus Prime Shell
+    Info: Version 23.1std.1 Build 993 05/14/2024 SC Lite Edition
+    Info: Copyright (C) 2024  Intel Corporation. All rights reserved.
+    Info: Your use of Intel Corporation's design tools, logic functions 
+    Info: and other software and tools, and any partner logic 
+    Info: functions, and any output files from any of the foregoing 
+    Info: (including device programming or simulation files), and any 
+    Info: associated documentation or information are expressly subject 
+    Info: to the terms and conditions of the Intel Program License 
+    Info: Subscription Agreement, the Intel Quartus Prime License Agreement,
+    Info: the Intel FPGA IP License Agreement, or other applicable license
+    Info: agreement, including, without limitation, that your use is for
+    Info: the sole purpose of programming logic devices manufactured by
+    Info: Intel and sold by Intel or its authorized distributors.  Please
+    Info: refer to the applicable agreement for further details, at
+    Info: https://fpgasoftware.intel.com/eula.
+    Info: Processing started: Sat Dec 13 13:20:43 2025
+Info: Command: quartus_sh --flow compile 6502-softcore.qpf
+Info: Quartus(args): compile 6502-softcore.qpf
+Info: Project Name = /home/silva/fpga/softcore-6502/6502-softcore/6502-softcore
+Info: Revision Name = 6502-softcore
+Info: *******************************************************************
+Info: Running Quartus Prime Analysis & Synthesis
+    Info: Version 23.1std.1 Build 993 05/14/2024 SC Lite Edition
+    Info: Processing started: Sat Dec 13 13:20:45 2025
+Info: Command: quartus_map --read_settings_files=on --write_settings_files=off 6502-softcore -c 6502-softcore
+Warning (18236): Number of processors has not been specified which may cause overloading on shared machines.  Set the global assignment NUM_PARALLEL_PROCESSORS in your QSF to an appropriate value for best performance.
+Info (20030): Parallel compilation is enabled and will use 2 of the 2 processors detected
+Info (12021): Found 1 design units, including 1 entities, in source file cpu_register.v
+    Info (12023): Found entity 1: cpu_register File: /home/silva/fpga/softcore-6502/6502-softcore/cpu_register.v Line: 1
+Info (12021): Found 1 design units, including 1 entities, in source file alu.v
+    Info (12023): Found entity 1: alu File: /home/silva/fpga/softcore-6502/6502-softcore/alu.v Line: 2
+Info (12021): Found 1 design units, including 1 entities, in source file decoder.v
+    Info (12023): Found entity 1: decoder File: /home/silva/fpga/softcore-6502/6502-softcore/decoder.v Line: 4
+Info (12021): Found 1 design units, including 1 entities, in source file ram.v
+    Info (12023): Found entity 1: ram File: /home/silva/fpga/softcore-6502/6502-softcore/ram.v Line: 40
+Info (12021): Found 1 design units, including 1 entities, in source file control_unit.v
+    Info (12023): Found entity 1: control_unit File: /home/silva/fpga/softcore-6502/6502-softcore/control_unit.v Line: 3
+Info (12021): Found 1 design units, including 1 entities, in source file top_level_cpu.v
+    Info (12023): Found entity 1: top_level_cpu File: /home/silva/fpga/softcore-6502/6502-softcore/top_level_cpu.v Line: 1
+Info (12021): Found 1 design units, including 1 entities, in source file sled_monitor.v
+    Info (12023): Found entity 1: sled_monitor File: /home/silva/fpga/softcore-6502/6502-softcore/sled_monitor.v Line: 3
+Info (12021): Found 1 design units, including 1 entities, in source file cpu_monitor.v
+    Info (12023): Found entity 1: cpu_monitor File: /home/silva/fpga/softcore-6502/6502-softcore/cpu_monitor.v Line: 6
+Info (12127): Elaborating entity "top_level_cpu" for the top level hierarchy
+Info (12128): Elaborating entity "control_unit" for hierarchy "control_unit:cpu_inst" File: /home/silva/fpga/softcore-6502/6502-softcore/top_level_cpu.v Line: 48
+Warning (10036): Verilog HDL or VHDL warning at control_unit.v(120): object "indirect_hi" assigned a value but never read File: /home/silva/fpga/softcore-6502/6502-softcore/control_unit.v Line: 120
+Info (10264): Verilog HDL Case Statement information at control_unit.v(195): all case item expressions in this case statement are onehot File: /home/silva/fpga/softcore-6502/6502-softcore/control_unit.v Line: 195
+Info (10264): Verilog HDL Case Statement information at control_unit.v(587): all case item expressions in this case statement are onehot File: /home/silva/fpga/softcore-6502/6502-softcore/control_unit.v Line: 587
+Info (10264): Verilog HDL Case Statement information at control_unit.v(661): all case item expressions in this case statement are onehot File: /home/silva/fpga/softcore-6502/6502-softcore/control_unit.v Line: 661
+Error (10028): Can't resolve multiple constant drivers for net "next_ind_sub.SUB_IND_READ_LO" at control_unit.v(250) File: /home/silva/fpga/softcore-6502/6502-softcore/control_unit.v Line: 250
+Error (10029): Constant driver at control_unit.v(147) File: /home/silva/fpga/softcore-6502/6502-softcore/control_unit.v Line: 147
+Error (10028): Can't resolve multiple constant drivers for net "next_ind_sub.SUB_IND_READ_HI" at control_unit.v(250) File: /home/silva/fpga/softcore-6502/6502-softcore/control_unit.v Line: 250
+Error (10028): Can't resolve multiple constant drivers for net "next_ind_sub.SUB_IND_READ_DATA" at control_unit.v(250) File: /home/silva/fpga/softcore-6502/6502-softcore/control_unit.v Line: 250
+Error (10028): Can't resolve multiple constant drivers for net "next_ind_sub.SUB_IND_COMPLETE" at control_unit.v(250) File: /home/silva/fpga/softcore-6502/6502-softcore/control_unit.v Line: 250
+Error (12152): Can't elaborate user hierarchy "control_unit:cpu_inst" File: /home/silva/fpga/softcore-6502/6502-softcore/top_level_cpu.v Line: 48
+Error: Quartus Prime Analysis & Synthesis was unsuccessful. 6 errors, 2 warnings
+    Error: Peak virtual memory: 333 megabytes
+    Error: Processing ended: Sat Dec 13 13:20:58 2025
+    Error: Elapsed time: 00:00:13
+    Error: Total CPU time (on all processors): 00:00:21
+Error (293001): Quartus Prime Full Compilation was unsuccessful. 8 errors, 2 warnings
+Error: Flow compile (for project /home/silva/fpga/softcore-6502/6502-softcore/6502-softcore) was not successful
+Error: ERROR: Error(s) found while running an executable. See report file(s) for error message(s). Message log indicates which executable was run last.
+
+Error (23031): Evaluation of Tcl script /home/silva/intelFPGA_lite/23.1std/quartus/common/tcl/internal/qsh_flow.tcl unsuccessful
+Error: Quartus Prime Shell was unsuccessful. 15 errors, 2 warnings
+    Error: Peak virtual memory: 459 megabytes
+    Error: Processing ended: Sat Dec 13 13:20:59 2025
+    Error: Elapsed time: 00:00:16
+    Error: Total CPU time (on all processors): 00:00:23

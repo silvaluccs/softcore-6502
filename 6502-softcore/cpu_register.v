@@ -31,7 +31,7 @@ module cpu_register(
 			   A  <= 8'h00;
             X  <= 8'h00;
             Y  <= 8'h00;
-            SP <= 8'hFD;     // SP inicial do 6502 real
+            SP <= 8'hFF;     // SP inicial do 6502 real
             PS  <= 8'h34;     // padrão de reset
             PC <= 16'h1000;  
 		end else begin
