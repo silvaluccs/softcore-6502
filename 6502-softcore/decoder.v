@@ -35,7 +35,7 @@ module decoder (
 				  I_BVS=8'd21, I_TA=8'd22, I_TX=8'd23, I_TY=8'd24, I_TS=8'd25,
           I_CMP=8'd26, I_CPX=8'd27, I_CPY=8'd28, I_SET_CARRY=8'd29, I_CLR_CARRY=8'd30,
           I_SET_IRQ=8'd31, I_CLR_IRQ=8'd32, I_SET_CLD=8'd33, I_CLR_CLD=8'd34, I_CLR_CLV=8'd35,
-          I_BIT=8'd36;
+          I_BIT=8'd36, I_JSR = 8'd37, I_RTS = 8'd38;
 
 	 // Register Destinations (reg_dest)
 	 localparam DEST_NONE = 3'd0; // Nenhuma escrita em Registrador (Ex: STA, JMP)
@@ -60,6 +60,7 @@ module decoder (
 		  reg_dest   = DEST_NONE; // Novo default
 
 		  case (opcode)
+
 
         8'h24: begin // BIT ZP
            instr_type = I_BIT; addr_mode  = ZP; instr_size = 2;
@@ -757,6 +758,17 @@ module decoder (
         8'h6C: begin // Indirect JMP
            instr_type = I_JMP; addr_mode  = IND; instr_size = 3;
            reg_dest   = DEST_NONE; mem_read  = 1; use_alu   = 0;
+        end
+
+        8'h20: begin // JSR
+           instr_type = I_JSR; addr_mode  = ABS; instr_size = 3;
+           reg_dest   = DEST_NONE;  use_alu   = 0;
+        end
+
+        8'h60: begin // RTS
+           instr_type = I_RTS; addr_mode  = IMPL; instr_size = 1;
+           mem_read   = 1; 
+           reg_dest   = DEST_NONE;  use_alu   = 0;
         end
 				
 				// -------- BEQ --------

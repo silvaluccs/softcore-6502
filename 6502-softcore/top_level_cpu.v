@@ -30,6 +30,7 @@ module top_level_cpu(
     wire [15:0] PC_debug;
 	 wire [7:0] X_debug;  // <--- NOVO: Sinal para X
     wire [7:0] Y_debug;  // <--- NOVO: Sinal para Y
+    wire [7:0] SP_debug;
 
     // Inverte o reset (para ativo alto)
     assign reset = ~reset_n; 
@@ -44,7 +45,8 @@ module top_level_cpu(
         .A_out(A_debug),   
         .X_out(X_debug),   // <--- NOVO: Conecta X_out
         .Y_out(Y_debug),   // <--- NOVO: Conecta Y_out
-        .PC_out(PC_debug) 
+        .PC_out(PC_debug),
+        .SP_out(SP_debug)
     );
     
     // ----------------------------------------------------------------
@@ -59,6 +61,7 @@ module top_level_cpu(
         .X_reg(X_debug),   // <--- NOVO: Passa X para o monitor
         .Y_reg(Y_debug),   // <--- NOVO: Passa Y para o monitor
         .PC_reg(PC_debug),
+        .SP_reg(SP_debug),
         .btn_n(btn_n),
         .seg(seg),
         .dig(dig)

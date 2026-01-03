@@ -1,25 +1,27 @@
-; --- TESTE JMP (INDIRECT) ---
+TEST_JSR_RTS:
+    LDX #$00       ; Initialize X register to 0
+    LDY #$01       ; Initialize Y register to 1
+    JSR SUBROUTINE ; Jump to subroutine
 
-; Configurando o endereço indireto
-LDA #$00
-STA $00        ; Endereço baixo
-LDA #$05
-STA $01        ; Endereço alto
+    LDA #$AA       ; Clear Accumulator A
+    ; After returning from JSR, check if the accumulators are preserved
+    NOP            ; No operation to check for correct behavior
 
-; Salvando o endereço do destino no endereço indireto
-LDA #$EE
-STA $0500      ; Destino do JMP
-LDA #$05
-STA $0501      ; Continuando destino do JMP
+    JMP END        ; Jump to the end of the program
 
-; Realiza o salto indireto
-JMP ($00)
+SUBROUTINE:
+    TXA            ; Transfer X to Accumulator
+    INX            ; Increment X register
+    TYA            ; Transfer Y to Accumulator
+    INY            ; Increment Y register
+    CPX #$05       ; Compare X register with 5 (end condition)
+    BNE RECURSE    ; If not equal, branch to RECURSE
+    RTS            ; Return from Subroutine
 
-SUCESSO:
-    LDA #$EE
-    JMP SUCESSO
+RECURSE:
+    JSR SUBROUTINE ; Recursive call to subroutine
+    RTS            ; Return from Subroutine
 
-FALHA:
-    LDA #$FF
-    JMP FALHA
+END:
+    JMP END       ; Infinite loop to end the program
 
