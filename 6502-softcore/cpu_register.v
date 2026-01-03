@@ -11,7 +11,8 @@ module cpu_register(
 	
 	input  wire [7:0]  data_in,
 	input  wire [7:0]  flags_in,
-   input  wire [15:0] pc_in,
+  input  wire [15:0] pc_in,
+  input  wire [7:0] sp_in,
 	
 	output reg [7:0] A,
 	output reg [7:0] X,
@@ -38,7 +39,7 @@ module cpu_register(
 			  A <= we_a ? data_in : A;
 			  X <= we_x ? data_in : X;
 			  Y <= we_y ? data_in : Y;
-			  SP <= we_sp ? data_in : SP;
+			  SP <= we_sp ? sp_in : SP;
 			  PC <= we_pc ? pc_in : PC;
 			  PS <= we_ps ? flags_in : PS;
 		end

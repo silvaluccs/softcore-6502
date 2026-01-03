@@ -48,17 +48,17 @@ module control_unit(
                SUB_STACK_3 = 3'd2;
 
     // Instruction types
-    localparam I_LDA = 8'd0,  I_STA = 8'd1,  I_ADC = 8'd2,  I_SBC = 8'd3,
-               I_AND = 8'd4,  I_JMP = 8'd5,  I_INX = 8'd6,  I_ORA = 8'd7,  
-               I_XOR = 8'd8,  I_INC = 8'd9,  I_ASL = 8'd10, I_LSR = 8'd11,
-               I_ROL = 8'd12, I_ROR = 8'd13, I_BEQ = 8'd14, I_BNE = 8'd15,
-               I_BCS = 8'd16, I_BCC = 8'd17, I_BMI = 8'd18, I_BPL = 8'd19, 
-               I_BVC = 8'd20, I_BVS = 8'd21, I_TA  = 8'd22, I_TX  = 8'd23, 
-               I_TY  = 8'd24, I_TS  = 8'd25, I_CMP = 8'd26, I_CPX = 8'd27, 
-               I_CPY = 8'd28, I_SET_CARRY = 8'd29, I_CLR_CARRY = 8'd30,
-               I_SET_IRQ   = 8'd31, I_CLR_IRQ   = 8'd32, I_SET_CLD = 8'd33, 
-               I_CLR_CLD   = 8'd34, I_CLR_CLV   = 8'd35, I_BIT     = 8'd36,
-               I_JSR       = 8'd37, I_RTS       = 8'd38;
+    	localparam I_LDA = 8'd0, I_STA = 8'd1, I_ADC = 8'd2, I_SBC = 8'd3,
+				  I_AND = 8'd4, I_JMP = 8'd5, I_INX = 8'd6, I_ORA = 8'd7,  
+				  I_XOR = 8'd8, I_INC = 8'd9, I_ASL = 8'd10, I_LSR = 8'd11,
+				  I_ROL = 8'd12, I_ROR = 8'd13, I_BEQ = 8'd14, I_BNE = 8'd15,
+				  I_BCS = 8'd16, I_BCC=8'd17, I_BMI = 8'd18, I_BPL=8'd19, I_BVC=8'd20,
+				  I_BVS=8'd21, I_TA=8'd22, I_TX=8'd23, I_TY=8'd24, I_TS=8'd25,
+          I_CMP=8'd26, I_CPX=8'd27, I_CPY=8'd28, I_SET_CARRY=8'd29, I_CLR_CARRY=8'd30,
+          I_SET_IRQ=8'd31, I_CLR_IRQ=8'd32, I_SET_CLD=8'd33, I_CLR_CLD=8'd34, I_CLR_CLV=8'd35,
+          I_BIT=8'd36, I_JSR = 8'd37, I_RTS = 8'd38, I_PHA = 8'd39, I_PLA = 8'd40,
+          I_PHP = 8'd41, I_PLP = 8'd42;
+
 
     // Register Destinations
     localparam DEST_NONE = 3'd0;
@@ -77,11 +77,12 @@ module control_unit(
 
     // Sinais Internos
     reg       we_a_sig, we_x_sig, we_y_sig, we_sp_sig, we_pc_sig, we_ps_sig;
-    reg [7:0] cpu_data_in;
+    reg [7:0] cpu_data_in, sp_data_in;
     wire [7:0] A, X, Y, SP, PS;
     wire [15:0] PC;
     reg [15:0] pc_in_reg;
     reg [7:0] flags_in_sig;
+
 
     // Instância do banco de registradores
     cpu_register cpu_register_inst (
@@ -89,7 +90,7 @@ module control_unit(
         .we_a(we_a_sig), .we_x(we_x_sig), .we_y(we_y_sig),
         .we_sp(we_sp_sig), .we_pc(we_pc_sig), .we_ps(we_ps_sig),
         .data_in(cpu_data_in), .pc_in(pc_in_reg), .flags_in(flags_in_sig),
-        .A(A), .X(X), .Y(Y), .SP(SP), .PC(PC), .PS(PS)
+        .A(A), .X(X), .Y(Y), .SP(SP), .PC(PC), .PS(PS), .sp_in(sp_data_in)
     );
 
     // Valor usado para empilhar no JSR (PC + 2) conforme 6502 (endereço do último byte da JSR)
@@ -124,7 +125,7 @@ module control_unit(
     );
 
     // Override para garantir leitura em RTS
-    wire mem_read_eff = mem_read_sig | (instr_type_sig == I_RTS);
+    wire mem_read_eff = mem_read_sig | (instr_type_sig == I_RTS) | (instr_type_sig == I_PLA) | (instr_type_sig == I_PLP);
 
     // Operandos e temporários
     reg [15:0] temp_pc;
@@ -153,7 +154,7 @@ module control_unit(
     // Saídas
     assign A_out  = A;
     assign PC_out = PC;
-    assign X_out  = X;    
+    assign X_out  = PS;    
     assign Y_out  = Y;    
     assign SP_out = SP;
 
@@ -275,6 +276,7 @@ module control_unit(
         we_pc_sig    = 0;
         we_ps_sig    = 0;
         cpu_data_in  = 8'd0;
+        sp_data_in   = 8'd0;
         pc_in_reg    = PC;
         flags_in_sig = PS;
         
@@ -373,7 +375,7 @@ module control_unit(
                         // Lendo da memória (se necessário)
                         else if (mem_read_eff) begin
                             // Força caminho de pilha para RTS
-                            if (addr_mode_sig == STACK || instr_type_sig == I_RTS) begin
+                            if (addr_mode_sig == STACK || instr_type_sig == I_RTS || instr_type_sig == I_PLA || instr_type_sig == I_PLP) begin
                                 case (current_sub_stack)
                                     SUB_STACK_1: begin
                                         ram_address = {8'h01, SP + 8'd1}; // LOW
@@ -465,7 +467,7 @@ module control_unit(
                             ram_address = temp_pc;
                         end 
                         else if (mem_read_eff) begin
-                            if (addr_mode_sig == STACK || instr_type_sig == I_RTS) begin
+                            if (addr_mode_sig == STACK || instr_type_sig == I_RTS || instr_type_sig == I_PLA || instr_type_sig == I_PLP) begin
                                 case (current_sub_stack)
                                     SUB_STACK_1: ram_address = {8'h01, SP + 8'd1};
                                     SUB_STACK_2: ram_address = {8'h01, SP + 8'd2};
@@ -536,7 +538,8 @@ module control_unit(
                                 default:           next_ind_sub = current_ind_sub;
                             endcase
                         end
-                        else if (mem_read_eff && (addr_mode_sig == STACK || instr_type_sig == I_RTS)) begin
+                        else if (mem_read_eff && (addr_mode_sig == STACK || instr_type_sig == I_RTS || instr_type_sig == I_PLA || instr_type_sig == I_PLP)) begin
+
                             case (current_sub_stack)
                                 SUB_STACK_1: begin
                                     next_sub_stack = SUB_STACK_2;
@@ -701,9 +704,11 @@ module control_unit(
                 if (reg_dest_sig == DEST_A || reg_dest_sig == DEST_X || 
                     reg_dest_sig == DEST_Y || reg_dest_sig == DEST_SP) begin
                     if (instr_type_sig == I_LDA) begin
-                        cpu_data_in = (addr_mode_sig == IMM) ? operand_lo : operand_val;
+                        if (reg_dest_sig == DEST_SP) sp_data_in = (addr_mode_sig == IMM) ? operand_lo : operand_val;
+                        else cpu_data_in = (addr_mode_sig == IMM) ? operand_lo : operand_val;
                     end else if (use_alu_sig) begin
-                        cpu_data_in = alu_result;
+                        if (reg_dest_sig == DEST_SP) sp_data_in = alu_result;
+                        else cpu_data_in = alu_result;
                     end
                 end
 
@@ -713,9 +718,22 @@ module control_unit(
                 // RTS: usa bytes lidos da pilha
                 if (instr_type_sig == I_RTS) begin
                     pc_in_reg   = {operand_hi, operand_lo} + 16'd1;
-                    cpu_data_in = SP + 8'd2; // SP += 2
+                    sp_data_in = SP + 8'd2;
                     we_sp_sig   = 1'b1;
                     we_pc_sig   = 1'b1;
+                end
+                else if (instr_type_sig == I_PLA || instr_type_sig == I_PLP) begin
+                    we_pc_sig = 1'b1;
+                    pc_in_reg = PC + 16'd1;
+                    we_sp_sig = 1'b1;
+                    sp_data_in = SP + 8'd1;
+                    if (instr_type_sig == I_PLA) begin
+                        we_a_sig = 1'b1;
+                        cpu_data_in = operand_lo;
+                    end else begin
+                        we_ps_sig = 1'b1;
+                        cpu_data_in = operand_lo & 8'b11001111; // Bits 4 and 5 always cleared
+                    end
                 end
                 else if (instr_type_sig == I_JSR) begin
                     we_pc_sig = 1'b0;
@@ -740,13 +758,33 @@ module control_unit(
                             we_pc_sig      = 1'b1;
                             we_sp_sig      = 1'b1;
                             w_ram          = 0;
-                            cpu_data_in    = SP - 8'd2;
+                            sp_data_in    = SP - 8'd2;
                             pc_in_reg      = {operand_hi, operand_lo};
                             next_sub_stack = SUB_STACK_1;
                             next_stage     = FETCH;
                         end
                         default : ;
                     endcase
+                end
+                else if (instr_type_sig == I_PHA) begin
+                  
+                    w_ram       = 1;
+                    ram_address = {8'h01, SP};
+                    ram_data_in = A;
+                    sp_data_in = SP - 8'd1;
+                    we_sp_sig   = 1'b1;
+                    we_pc_sig  = 1'b1;
+                    pc_in_reg = PC + 16'd1;
+                end
+                else if (instr_type_sig == I_PHP) begin
+                    w_ram       = 1;
+                    ram_address = {8'h01, SP};
+                    ram_data_in = PS | 8'b00110000; // Bit 4 and 5 always set
+                    sp_data_in = SP - 8'd1;
+                    we_sp_sig   = 1'b1;
+                    pc_in_reg = PC + 16'd1;
+                    we_pc_sig = 1'b1;
+                
                 end
                 else if (instr_type_sig == I_JMP && addr_mode_sig == ABS) 
                     pc_in_reg = {operand_hi, operand_lo};

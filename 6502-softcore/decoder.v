@@ -25,6 +25,7 @@ module decoder (
     localparam INDX = 4'd8;
     localparam INDY = 4'd9;	 // Instruction types
     localparam IND = 4'd10;
+    localparam STACK = 4'd11;
 
 	// Instruction types (8 bits de largura)
 	localparam I_LDA = 8'd0, I_STA = 8'd1, I_ADC = 8'd2, I_SBC = 8'd3,
@@ -35,7 +36,8 @@ module decoder (
 				  I_BVS=8'd21, I_TA=8'd22, I_TX=8'd23, I_TY=8'd24, I_TS=8'd25,
           I_CMP=8'd26, I_CPX=8'd27, I_CPY=8'd28, I_SET_CARRY=8'd29, I_CLR_CARRY=8'd30,
           I_SET_IRQ=8'd31, I_CLR_IRQ=8'd32, I_SET_CLD=8'd33, I_CLR_CLD=8'd34, I_CLR_CLV=8'd35,
-          I_BIT=8'd36, I_JSR = 8'd37, I_RTS = 8'd38;
+          I_BIT=8'd36, I_JSR = 8'd37, I_RTS = 8'd38, I_PHA = 8'd39, I_PLA = 8'd40,
+          I_PHP = 8'd41, I_PLP = 8'd42;
 
 	 // Register Destinations (reg_dest)
 	 localparam DEST_NONE = 3'd0; // Nenhuma escrita em Registrador (Ex: STA, JMP)
@@ -45,6 +47,7 @@ module decoder (
 	 localparam DEST_MEM  = 3'd4; // Memória (Ex: INC/DEC que volta pra RAM)
 	 localparam DEST_SP   = 3'd5;
    localparam DEST_PS   = 3'd6;
+
 
 
 
@@ -60,6 +63,23 @@ module decoder (
 		  reg_dest   = DEST_NONE; // Novo default
 
 		  case (opcode)
+
+        8'h48: begin // PHA
+          instr_type = I_PHA; addr_mode = STACK; instr_size = 1;
+          mem_write  = 1; mem_read = 0; reg_dest = DEST_NONE;
+        end
+        8'h68: begin // PLA
+          instr_type = I_PLA; addr_mode = STACK; instr_size = 1;
+          mem_read   = 1; mem_write = 0; reg_dest = DEST_A;
+        end
+        8'h08: begin // PHP
+          instr_type = I_PHP; addr_mode = STACK; instr_size = 1;
+          mem_write  = 1; mem_read = 0; reg_dest = DEST_NONE;
+        end
+        8'h28: begin // PLP
+          instr_type = I_PLP; addr_mode = STACK; instr_size = 1;
+          mem_read   = 1; mem_write = 0; reg_dest = DEST_PS;
+        end
 
 
         8'h24: begin // BIT ZP
