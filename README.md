@@ -7,10 +7,11 @@ Este repositório contém a implementação completa de um processador simples d
 ✔ Arquitetura própria
 ✔ Registradores A, X, Y, PC, SP e PS
 ✔ Pipeline simples baseado em **FSM de 5 estágios**
-✔ Instruções inspiradas no 6502 (ADC, SBC, LDA, BEQ, BNE…)
-✔ Modos de endereçamento imediato, zeropage e absoluto
+✔ Instruções inspiradas no 6502 (ADC, SBC, JSR, RTS, LDA, BEQ, BNE…)
+✔ Modos de endereçamento imediato, zeropage, absoluto e indireto
 ✔ Memória RAM 16 KB
 ✔ ALU completa com operações lógicas, aritméticas e shifts/rotates
+✔ Suporte à utilização de stack para operações de push/pop e chamadas de função (JSR/RTS)
 ✔ Interface de monitoramento via display de 7 segmentos
 ✔ Totalmente sintetizável na **Cyclone IV EP4CE6E22C8N**
 
@@ -26,7 +27,7 @@ A CPU possui os seguintes registradores internos:
 | **X**       | 8 bits  | Index register                               |
 | **Y**       | 8 bits  | Index register                               |
 | **PC**      | 16 bits | Program Counter                              |
-| **SP**      | 8 bits  | Stack Pointer (reservado para expansões)     |
+| **SP**      | 8 bits  | Stack Pointer (suporte ampliado para stack)  |
 | **PS**      | 8 bits  | Processor Status  |
 
 ### **Flags implementados:**
@@ -81,12 +82,13 @@ As operações atualizam os 4 flags básicos.
 
 # 📦 **Modos de Endereçamento**
 
-| Código | Nome      | Descrição                                    |
-| ------ | --------- | -------------------------------------------- |
-| `00`   | Implied   | Operação sem operandos (INX, ROR A…)         |
-| `01`   | Immediate | Byte seguinte é o operando                   |
-| `02`   | Zero Page | Endereço 8 bits (endereça RAM 0x0000–0x00FF) |
-| `03`   | Absolute  | Dois bytes de endereço                       |
+| Código | Nome        | Descrição                                    |
+| ------ | ----------- | -------------------------------------------- |
+| `00`   | Implied     | Operação sem operandos (INX, ROR A…)         |
+| `01`   | Immediate   | Byte seguinte é o operando                   |
+| `02`   | Zero Page   | Endereço 8 bits (endereça RAM 0x0000–0x00FF) |
+| `03`   | Absolute    | Dois bytes de endereço                       |
+| `04`   | Indirect    | Ponteiro armazenado no endereço fornecido    |
 
 ### **Branch utiliza endereçamento relativo**
 
@@ -155,6 +157,9 @@ novo_PC = PC + offset + 2
 | Mnemonic | Opcode | Ação                   |
 | -------- | ------ | ---------------------- |
 | JMP abs  | 4C     | PC ← endereço absoluto |
+| JMP ind  | 6C     | PC ← endereço indireto |
+| JSR abs  | 20     | Stack ← PC, Salto      |
+| RTS      | 60     | Retorna do subprograma |
 | BEQ rel  | F0     | if Z==1 branch         |
 | BNE rel  | D0     | if Z==0 branch         |
 
@@ -233,8 +238,8 @@ end:  JMP end
 * [x] ALU completa
 * [x] Registradores A, X, Y
 * [x] JMP / BEQ / BNE funcionando
+* [x] Stack funcionando (Push/Pop, JSR/RTS)
 * [x] Monitor com display
-* [ ] Stack
 * [ ] Interrupções
 * [ ] Modo absoluto para mais instruções
 * [ ] Montador simples
